@@ -194,8 +194,17 @@ def main():
     sb.run(["ffmpeg", "-y", "-i", video_only, "-i", narration,
             "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac",
             "-ar", "48000", muxed])
+    mixed = os.path.join(OUT_DIR, "mixed.mp4")
+    sb.add_bgm(muxed, mixed)
+    # Final polish: fade the audio out so the file never ends mid-waveform
+    # (an abrupt cut at full volume is heard as a click/crackle).
     final = os.path.join(OUT_DIR, "final-1.mp4")
-    sb.add_bgm(muxed, final)
+    dur = sb.probe_duration(mixed)
+    fade_st = max(dur - 0.6, 0)
+    sb.run(["ffmpeg", "-y", "-i", mixed, "-map", "0:v", "-map", "0:a",
+            "-filter_complex",
+            f"[1:a]afade=t=out:st={fade_st:.3f}:d=0.6[a]",
+            "-c:v", "copy", "-c:a", "aac", "-ar", "48000", final])
     print(f"DONE {final} duration={sb.probe_duration(final):.2f}s",
           flush=True)
     return 0
