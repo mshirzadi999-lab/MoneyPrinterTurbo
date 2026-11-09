@@ -180,6 +180,7 @@ def main():
         return 1
     os.makedirs(OUT_DIR, exist_ok=True)
     print(f"Building {len(segments)} segments with voice {voice}", flush=True)
+    speed = float(os.environ.get("SPEED", "1.0") or "1.0")
     parts = []
     for i, (text, prompt) in enumerate(segments, 1):
         wav = os.path.join(OUT_DIR, f"seg{i:02d}.wav")
@@ -187,6 +188,11 @@ def main():
         mp4 = os.path.join(OUT_DIR, f"seg{i:02d}.mp4")
         print(f"[{i}/{len(segments)}] TTS: {text[:40]}...", flush=True)
         tts(text, voice, style, wav)
+        if abs(speed - 1.0) > 0.001:
+            sped = wav.replace(".wav", "-s.wav")
+            run(["ffmpeg", "-y", "-i", wav, "-filter:a",
+                 f"atempo={speed}", sped])
+            wav = sped
         dur = probe_duration(wav)
         print(f"[{i}/{len(segments)}] audio {dur:.2f}s -> image: {prompt[:50]}",
               flush=True)

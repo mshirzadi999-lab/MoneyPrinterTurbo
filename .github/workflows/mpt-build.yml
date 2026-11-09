@@ -87,6 +87,11 @@ on:
         required: false
         default: ""
         type: string
+      speed:
+        description: "Segmented mode: voice playback speed (atempo, pitch preserved), e.g. 1.15"
+        required: false
+        default: "1.0"
+        type: string
       style_prompt:
         description: "Segmented mode: style instruction prepended to each TTS call"
         required: false
@@ -248,6 +253,7 @@ jobs:
         env:
           SEGMENTS: ${{ inputs.segments }}
           VOICE: ${{ inputs.voice }}
+          SPEED: ${{ inputs.speed }}
           STYLE_PROMPT: ${{ inputs.style_prompt }}
           IMAGE_STYLE: ${{ inputs.image_style }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
