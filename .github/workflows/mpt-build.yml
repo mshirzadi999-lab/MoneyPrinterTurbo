@@ -83,6 +83,11 @@ on:
           - "mpt"
           - "segmented"
           - "timed"
+      bgm:
+        description: "Background music: file name in resource/bgm (copyright-safe library), or 'none' for no music"
+        required: false
+        default: ""
+        type: string
       audio_run_id:
         description: "Timed mode only: reuse the narration from this earlier run id (skips Gemini TTS)"
         required: false
@@ -259,6 +264,7 @@ jobs:
         if: ${{ inputs.builder == 'segmented' }}
         env:
           SEGMENTS: ${{ inputs.segments }}
+          BGM_NAME: ${{ inputs.bgm }}
           VOICE: ${{ inputs.voice }}
           SPEED: ${{ inputs.speed }}
           STYLE_PROMPT: ${{ inputs.style_prompt }}
@@ -281,6 +287,7 @@ jobs:
         if: ${{ inputs.builder == 'timed' }}
         env:
           SEGMENTS: ${{ inputs.segments }}
+          BGM_NAME: ${{ inputs.bgm }}
           NARRATION_FILE: ${{ env.NARRATION_FILE }}
           VOICE: ${{ inputs.voice }}
           SPEED: ${{ inputs.speed }}

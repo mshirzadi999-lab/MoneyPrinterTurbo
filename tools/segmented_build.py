@@ -150,7 +150,18 @@ def concat(parts, out_mp4):
 
 
 def add_bgm(video, out_mp4):
-    songs = sorted(glob.glob(os.path.join("resource", "songs", "*.mp3")))
+    choice = (os.environ.get("BGM_NAME") or "").strip()
+    if choice.lower() == "none":
+        os.replace(video, out_mp4)
+        return
+    picked = os.path.join("resource", "bgm", choice) if choice else ""
+    if picked and os.path.exists(picked):
+        songs = [picked]
+    else:
+        if picked:
+            print(f"WARNING: bgm '{choice}' not found, using library default")
+        songs = sorted(glob.glob(os.path.join("resource", "bgm", "*.mp3"))) or \
+            sorted(glob.glob(os.path.join("resource", "songs", "*.mp3")))
     if not songs:
         print("No BGM songs found, keeping narration only.", flush=True)
         os.replace(video, out_mp4)
