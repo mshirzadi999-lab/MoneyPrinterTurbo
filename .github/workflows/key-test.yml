@@ -1,0 +1,41 @@
+name: Key Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Gemini SDK
+        run: pip install -q google-genai
+      - name: Gemini key 1
+        continue-on-error: true
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python tools/key_test.py gemini
+      - name: Gemini key 2
+        continue-on-error: true
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_2 }}
+        run: python tools/key_test.py gemini
+      - name: Cloudflare account 1
+        continue-on-error: true
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: python tools/key_test.py cf
+      - name: Cloudflare account 2
+        continue-on-error: true
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID_2 }}
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_2 }}
+        run: python tools/key_test.py cf

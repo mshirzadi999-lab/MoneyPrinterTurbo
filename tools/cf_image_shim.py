@@ -23,6 +23,24 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 ACCOUNT = os.environ.get("CF_ACCOUNT_ID", "").strip()
 TOKEN = os.environ.get("CF_API_TOKEN", "").strip()
+ACCOUNTS = []
+for _a, _t in (("CF_ACCOUNT_ID", "CF_API_TOKEN"),
+               ("CF_ACCOUNT_ID_2", "CF_API_TOKEN_2")):
+    _av = os.environ.get(_a, "").strip()
+    _tv = os.environ.get(_t, "").strip()
+    if _av and _tv:
+        ACCOUNTS.append((_av, _tv))
+QUOTA_WORDS = ("quota", "limit", "exceeded", "allocation",
+               "neurons", "daily", "429")
+
+
+def is_quota_failure(msg):
+    s = str(msg).lower()
+    return ("4006" in s or "429" in s
+            or ("error" in s and any(w in s for w in QUOTA_WORDS[0:6]))
+            or any(w in s for w in ("quota", "allocation", "neurons")))
+
+
 MODEL = os.environ.get(
     "CF_IMAGE_MODEL", "@cf/black-forest-labs/flux-1-schnell"
 ).strip()
@@ -30,6 +48,22 @@ PORT = int(os.environ.get("SHIM_PORT", "8123"))
 
 
 def generate_image(prompt: str) -> bytes:
+    last = None
+    for i, (acc, tok) in enumerate(ACCOUNTS):
+        try:
+            return _generate_with(acc, tok, prompt)
+        except Exception as e:  # noqa: BLE001 - try next account on quota
+            last = e
+            if i + 1 < len(ACCOUNTS) and is_quota_failure(e):
+                sys.stderr.write(
+                    f"[shim] account {i + 1} quota/limit hit ({e}); "
+                    f"switching to account {i + 2}\n")
+                continue
+            raise
+    raise RuntimeError(f"all Cloudflare accounts failed: {last}")
+
+
+def _generate_with(ACCOUNT, TOKEN, prompt: str) -> bytes:
     url = (
         "https://api.cloudflare.com/client/v4/accounts/"
         f"{ACCOUNT}/ai/run/{MODEL}"
@@ -116,7 +150,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    if not ACCOUNT or not TOKEN:
+    if not ACCOUNTS:
         sys.exit("CF_ACCOUNT_ID and CF_API_TOKEN must be set")
     print(f"cf_image_shim listening on 127.0.0.1:{PORT}, model={MODEL}")
     ThreadingHTTPServer(("127.0.0.1", PORT), Handler).serve_forever()

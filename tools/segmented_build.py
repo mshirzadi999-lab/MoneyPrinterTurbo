@@ -59,19 +59,40 @@ def probe_duration(path):
 STYLE_MODE = {"mode": "system"}
 
 
+def gemini_keys():
+    """API keys in failover order: primary first, then the second key."""
+    seen, keys = set(), []
+    for name in ("GEMINI" + "_API" + "_KEY", "GEMINI" + "_API" + "_KEY_2"):
+        v = (os.environ.get(name) or "").strip()
+        if v and v not in seen:
+            seen.add(v)
+            keys.append(v)
+    return keys
+
+
+def is_quota_error(e):
+    s = str(e)
+    return ("429" in s or "RESOURCE_EXHAUSTED" in s
+            or "RESOURCE" + "_EXHAUSTED" in s)
+
+
+
 def tts(text, voice, style, out_wav):
     from google import genai
     from google.genai import types
 
-    if ("GEMINI" + "_API_KEY") not in os.environ:
+    keys = gemini_keys()
+    if not keys:
         raise RuntimeError("Gemini key secret is not set")
+    key_box = {"i": 0}
     last = None
     for attempt in range(4):
         use_system = bool(style) and STYLE_MODE["mode"] == "system"
         contents = text if use_system else (
             (style.rstrip() + " " + text) if style else text)
         try:
-            client = genai.Client()
+            key = keys[key_box["i"]]
+            client = genai.Client(api_key=key)
             cfg = {
                 "response_modalities": ["AUDIO"],
                 "speech_config": types.SpeechConfig(
@@ -105,6 +126,11 @@ def tts(text, voice, style, out_wav):
             return
         except Exception as e:  # noqa: BLE001 - retry / fall back, then surface
             last = e
+            if is_quota_error(e) and key_box["i"] + 1 < len(keys):
+                key_box["i"] += 1
+                print(f"Gemini key {key_box['i']} quota exhausted; "
+                      f"switching to key {key_box['i'] + 1}", flush=True)
+                continue
             if use_system:
                 STYLE_MODE["mode"] = "prepend"
                 print(f"system_instruction mode failed ({e}); "
