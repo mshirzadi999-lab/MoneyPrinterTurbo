@@ -2016,7 +2016,7 @@ def gemini_tts(
         # 请求结束后释放 HTTP 连接，同时保留原有 PCM 转码和字幕时间轴逻辑。
         with genai.Client(api_key=api_key) as client:
             response = client.models.generate_content(
-                model="gemini-2.5-flash-preview-tts",
+                model=(config.app.get("gemini_tts_model") or "gemini-3.8-flash-tts"),
                 contents=text,
                 config=generation_config,
             )
