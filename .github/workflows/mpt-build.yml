@@ -35,6 +35,32 @@ on:
           - "9:16"
           - "16:9"
           - "1:1"
+      voice_rate:
+        description: "Voice speed (1.0 = normal)"
+        required: false
+        default: "1.15"
+        type: string
+      clip_duration:
+        description: "Seconds per video chunk"
+        required: false
+        default: "3"
+        type: string
+      subtitles:
+        description: "Burn subtitles into the video"
+        required: false
+        default: "off"
+        type: choice
+        options:
+          - "off"
+          - "on"
+      match_script:
+        description: "Match stock clips to script order (API sources)"
+        required: false
+        default: "on"
+        type: choice
+        options:
+          - "on"
+          - "off"
 
 permissions:
   contents: read
@@ -125,8 +151,13 @@ jobs:
           SCRIPT: ${{ inputs.script }}
           VOICE: ${{ inputs.voice }}
           ASPECT: ${{ inputs.aspect }}
+          VOICE_RATE: ${{ inputs.voice_rate }}
+          CLIP_DURATION: ${{ inputs.clip_duration }}
+          SUBTITLES: ${{ inputs.subtitles }}
         run: |
-          python cli.py --video-subject "$SUBJECT" --video-script "$SCRIPT" --video-source local --video-materials "$MATERIALS_LIST" --voice-name "$VOICE" --video-aspect "$ASPECT" --video-count 1 --subtitle-enabled
+          SUB_FLAG="--no-subtitle-enabled"
+          if [ "$SUBTITLES" = "on" ]; then SUB_FLAG="--subtitle-enabled"; fi
+          python cli.py --video-subject "$SUBJECT" --video-script "$SCRIPT" --video-source local --video-materials "$MATERIALS_LIST" --voice-name "$VOICE" --video-aspect "$ASPECT" --video-count 1 --voice-rate "$VOICE_RATE" --video-clip-duration "$CLIP_DURATION" $SUB_FLAG
 
       - name: Build video (API source)
         if: ${{ inputs.materials == '' }}
@@ -136,8 +167,16 @@ jobs:
           TERMS: ${{ inputs.terms }}
           VOICE: ${{ inputs.voice }}
           ASPECT: ${{ inputs.aspect }}
+          VOICE_RATE: ${{ inputs.voice_rate }}
+          CLIP_DURATION: ${{ inputs.clip_duration }}
+          SUBTITLES: ${{ inputs.subtitles }}
+          MATCH_SCRIPT: ${{ inputs.match_script }}
         run: |
-          python cli.py --video-subject "$SUBJECT" --video-script "$SCRIPT" --video-terms "$TERMS" --video-source "$VIDEO_SOURCE" --voice-name "$VOICE" --video-aspect "$ASPECT" --video-count 1 --subtitle-enabled
+          SUB_FLAG="--no-subtitle-enabled"
+          if [ "$SUBTITLES" = "on" ]; then SUB_FLAG="--subtitle-enabled"; fi
+          MATCH_FLAG=""
+          if [ "$MATCH_SCRIPT" = "on" ]; then MATCH_FLAG="--match-materials-to-script"; fi
+          python cli.py --video-subject "$SUBJECT" --video-script "$SCRIPT" --video-terms "$TERMS" --video-source "$VIDEO_SOURCE" --voice-name "$VOICE" --video-aspect "$ASPECT" --video-count 1 --voice-rate "$VOICE_RATE" --video-clip-duration "$CLIP_DURATION" $SUB_FLAG $MATCH_FLAG
 
       - name: Upload result
         if: always()
