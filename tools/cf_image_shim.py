@@ -34,7 +34,9 @@ def generate_image(prompt: str) -> bytes:
         "https://api.cloudflare.com/client/v4/accounts/"
         f"{ACCOUNT}/ai/run/{MODEL}"
     )
-    payload = json.dumps({"prompt": prompt, "num_steps": 4}).encode("utf-8")
+    # NOTE: flux-1-schnell's REST schema rejects extra properties such as
+    # num_steps (AiError 5006). Send the prompt only; defaults apply.
+    payload = json.dumps({"prompt": prompt}).encode("utf-8")
     req = urllib.request.Request(
         url,
         data=payload,
