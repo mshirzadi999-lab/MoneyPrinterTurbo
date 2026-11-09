@@ -131,8 +131,10 @@ def gen_image(prompt, out_png):
 def make_segment(img, wav, dur, out_mp4):
     vf = (f"scale={W}:{H}:force_original_aspect_ratio=increase,"
           f"crop={W}:{H},fps=30,format=yuv420p")
+    af = (f"apad,afade=t=in:st=0:d=0.03,"
+          f"afade=t=out:st={max(dur - 0.06, 0):.3f}:d=0.06")
     run(["ffmpeg", "-y", "-loop", "1", "-i", img, "-i", wav,
-         "-filter_complex", f"[0:v]{vf}[v];[1:a]apad[a]",
+         "-filter_complex", f"[0:v]{vf}[v];[1:a]{af}[a]",
          "-map", "[v]", "-map", "[a]", "-t", f"{dur:.3f}",
          "-c:v", "libx264", "-preset", "medium", "-c:a", "aac",
          "-ar", "48000", out_mp4])
