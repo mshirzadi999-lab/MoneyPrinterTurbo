@@ -61,6 +61,19 @@ on:
         options:
           - "on"
           - "off"
+      source_mode:
+        description: "auto = stock APIs (Coverr etc.), cloudflare = generated images"
+        required: false
+        default: "auto"
+        type: choice
+        options:
+          - "auto"
+          - "cloudflare"
+      image_style:
+        description: "Prompt template for generated images ({term} placeholder)"
+        required: false
+        default: "minimal flat vector illustration of {term}, centered composition, soft beige background, muted teal and orange accents, simple clean shapes, no text, no letters, no words, no watermark"
+        type: string
 
 permissions:
   contents: read
@@ -94,6 +107,8 @@ jobs:
           PIXABAY_API_KEYS: ${{ secrets.PIXABAY_API_KEYS }}
           COVERR_API_KEYS: ${{ secrets.COVERR_API_KEYS }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SOURCE_MODE: ${{ inputs.source_mode }}
+          IMAGE_STYLE: ${{ inputs.image_style }}
         run: |
           cp config.example.toml config.toml
           python3 - <<'PY'
@@ -102,7 +117,11 @@ jobs:
           pix = [k.strip() for k in os.environ.get("PIXABAY_API_KEYS", "").split(",") if k.strip()]
           cov = [k.strip() for k in os.environ.get("COVERR_API_KEYS", "").split(",") if k.strip()]
           gem = os.environ.get("GEMINI_API_KEY", "").strip()
+          mode = os.environ.get("SOURCE_MODE", "auto").strip()
+          style = os.environ.get("IMAGE_STYLE", "").strip()
           source = "pexels" if pex else ("pixabay" if pix else ("coverr" if cov else "pexels"))
+          if mode == "cloudflare":
+              source = "openai_image"
           lines = open("config.toml", encoding="utf-8").read().splitlines()
           out = []
           for ln in lines:
@@ -118,12 +137,34 @@ jobs:
                   ln = 'llm_provider = "gemini"'
               elif ln.startswith("video_source"):
                   ln = 'video_source = "' + source + '"'
+              elif mode == "cloudflare" and ln.startswith("openai_image_base_url"):
+                  ln = 'openai_image_base_url = "http://127.0.0.1:8123/v1"'
+              elif mode == "cloudflare" and ln.startswith("openai_image_api_keys"):
+                  ln = 'openai_image_api_keys = ["shim-local"]'
+              elif mode == "cloudflare" and ln.startswith("openai_image_model"):
+                  ln = 'openai_image_model = "@cf/black-forest-labs/flux-1-schnell"'
+              elif mode == "cloudflare" and ln.startswith("openai_image_prompt_template"):
+                  ln = "openai_image_prompt_template = " + json.dumps(style)
               out.append(ln)
           open("config.toml", "w", encoding="utf-8").write("\n".join(out) + "\n")
           with open(os.environ["GITHUB_ENV"], "a") as f:
               f.write("VIDEO_SOURCE=" + source + "\n")
           print("pexels keys:", len(pex), "| pixabay keys:", len(pix), "| source:", source, "| gemini key set:", bool(gem))
           PY
+
+      - name: Start Cloudflare image shim
+        if: ${{ inputs.source_mode == 'cloudflare' }}
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          nohup python3 tools/cf_image_shim.py > shim.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8123/health > /dev/null; then echo "shim is up"; break; fi
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8123/health
+          cat shim.log
 
       - name: Download provided materials
         if: ${{ inputs.materials != '' }}
