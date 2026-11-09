@@ -74,6 +74,24 @@ on:
         required: false
         default: "minimal flat vector illustration of {term}, centered composition, soft beige background, muted teal and orange accents, simple clean shapes, no text, no letters, no words, no watermark"
         type: string
+      builder:
+        description: "mpt = MoneyPrinterTurbo pipeline, segmented = per-sentence build (Gemini voice + generated images, exact sync)"
+        required: false
+        default: "mpt"
+        type: choice
+        options:
+          - "mpt"
+          - "segmented"
+      segments:
+        description: "Segmented mode only: one line per sentence: <sentence> ||| <image prompt>"
+        required: false
+        default: ""
+        type: string
+      style_prompt:
+        description: "Segmented mode: style instruction prepended to each TTS call"
+        required: false
+        default: "Read the following Persian text aloud in a commanding narration style, with rich vocal modulation and dramatic pauses. Read only the Persian text, not this instruction:"
+        type: string
 
 permissions:
   contents: read
@@ -153,7 +171,7 @@ jobs:
           PY
 
       - name: Start Cloudflare image shim
-        if: ${{ inputs.source_mode == 'cloudflare' }}
+        if: ${{ inputs.source_mode == 'cloudflare' || inputs.builder == 'segmented' }}
         env:
           CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -192,7 +210,7 @@ jobs:
           ls -la materials
 
       - name: Build video (local materials)
-        if: ${{ inputs.materials != '' }}
+        if: ${{ inputs.builder == 'mpt' && inputs.materials != '' }}
         env:
           SUBJECT: ${{ inputs.subject }}
           SCRIPT: ${{ inputs.script }}
@@ -207,7 +225,7 @@ jobs:
           python cli.py --video-subject "$SUBJECT" --video-script "$SCRIPT" --video-source local --video-materials "$MATERIALS_LIST" --voice-name "$VOICE" --video-aspect "$ASPECT" --video-count 1 --voice-rate "$VOICE_RATE" --video-clip-duration "$CLIP_DURATION" $SUB_FLAG
 
       - name: Build video (API source)
-        if: ${{ inputs.materials == '' }}
+        if: ${{ inputs.builder == 'mpt' && inputs.materials == '' }}
         env:
           SUBJECT: ${{ inputs.subject }}
           SCRIPT: ${{ inputs.script }}
@@ -224,6 +242,16 @@ jobs:
           MATCH_FLAG=""
           if [ "$MATCH_SCRIPT" = "on" ]; then MATCH_FLAG="--match-materials-to-script"; fi
           python cli.py --video-subject "$SUBJECT" --video-script "$SCRIPT" --video-terms "$TERMS" --video-source "$VIDEO_SOURCE" --voice-name "$VOICE" --video-aspect "$ASPECT" --video-count 1 --voice-rate "$VOICE_RATE" --video-clip-duration "$CLIP_DURATION" $SUB_FLAG $MATCH_FLAG
+
+      - name: Build video (segmented)
+        if: ${{ inputs.builder == 'segmented' }}
+        env:
+          SEGMENTS: ${{ inputs.segments }}
+          VOICE: ${{ inputs.voice }}
+          STYLE_PROMPT: ${{ inputs.style_prompt }}
+          IMAGE_STYLE: ${{ inputs.image_style }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python tools/segmented_build.py
 
       - name: Upload result
         if: always()
