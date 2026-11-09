@@ -23,7 +23,9 @@ jobs:
           CF_API_TOKEN_2: ${{ secrets.CLOUDFLARE_API_TOKEN_2 }}
           CF_ACCOUNT_ID_3: ${{ secrets.CLOUDFLARE_ACCOUNT_ID_3 }}
           CF_API_TOKEN_3: ${{ secrets.CLOUDFLARE_API_TOKEN_3 }}
-        run: python tools/char_test.py
+        run: |
+          pip install -q pillow
+          python tools/char_test.py
       - name: Upload character test images
         if: always()
         uses: actions/upload-artifact@v4

@@ -11,9 +11,9 @@ Output: char/ref.png, char/scene1-party.png, char/scene2-prison.png
 Env: CF account/token pairs 1..3.
 """
 import base64
+import io
 import json
 import os
-import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -115,14 +115,19 @@ def generate(prompt, ref_blob=None):
     raise RuntimeError(f"all accounts failed: {last}")
 
 
-def shrink(png_bytes, out_png):
-    with open("_ref_full.png", "wb") as f:
-        f.write(png_bytes)
-    subprocess.run(
-        ["ffmpeg", "-y", "-v", "error", "-i", "_ref_full.png",
-         "-vf", "scale=448:448", out_png], check=True)
-    with open(out_png, "rb") as f:
-        return f.read()
+def shrink(png_bytes):
+    """Downscale the reference to 448x448 (FLUX.2 inputs must be <512px)."""
+    try:
+        from PIL import Image
+        img = Image.open(io.BytesIO(png_bytes)).convert("RGB")
+        img = img.resize((448, 448))
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        return buf.getvalue()
+    except Exception as e:  # noqa: BLE001 - reference still usable full-size
+        print(f"  shrink failed ({e}); sending full-size reference",
+              flush=True)
+        return png_bytes
 
 
 def main():
@@ -134,7 +139,7 @@ def main():
     ref = generate(REF_PROMPT)
     with open("char/ref.png", "wb") as f:
         f.write(ref)
-    ref_small = shrink(ref, "_ref_small.png")
+    ref_small = shrink(ref)
     print(f"  reference shrunk to {len(ref_small)} bytes", flush=True)
 
     scenes = (("scene1-party", SCENE1_PROMPT),
