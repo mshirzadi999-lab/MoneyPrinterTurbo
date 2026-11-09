@@ -5,9 +5,9 @@
   2. Optional speed-up (atempo, pitch preserved) applied to the narration.
   3. Sentence boundaries measured from the actual audio (faster-whisper
      word timestamps -> largest inter-word gaps are the sentence pauses).
-  4. Mehdi's 5-second rule: a sentence up to SPLIT_THRESHOLD seconds gets
-     ONE image; a longer sentence is split into TWO image slots at its
-     largest internal pause.
+  4. Mehdi's 5-second rule: a sentence of length L gets
+     ceil(L / SPLIT_THRESHOLD) image slots, split at its largest
+     internal pauses, so no image sits much longer than the threshold.
   5. One generated image per slot (Cloudflare shim), held for exactly its
      slot duration; the single narration file is muxed untouched, so the
      audio has no seams at all.
@@ -22,6 +22,7 @@ Env:
 Output: storage/tasks/timed/final-1.mp4
 """
 import base64
+import math
 import os
 import sys
 
@@ -58,53 +59,86 @@ def transcribe_words(wav_path):
 
 
 def compute_slots(audio_path, words, segments, total_dur,
-                  n_sentences, threshold=SPLIT_THRESHOLD):
-    """Sentence spans from whisper's own sentence-level segments.
+                  n_sentences, threshold=SPLIT_THRESHOLD, sent_words=None):
+    """Sentence spans anchored on the word stream.
 
-    Segments already pause at sentence ends; map them onto the known
-    sentence count (merge extras at the smallest gap, split the longest
-    if too few), then apply the split rule. (audio_path/words kept for
-    signature stability and the split step.)
+    Expected boundary positions come from each sentence's share of the
+    script's words (speech rate is roughly uniform); each boundary then
+    snaps to the largest pause (inter-word gap) near its expected spot.
+    Whisper's own segments are deliberately NOT trusted for boundaries:
+    on one take they swallowed the first three sentences into a single
+    segment and every image drifted ~10s behind the voice. Slots: a
+    sentence of length L gets ceil(L / threshold) images, split at its
+    largest internal pauses, so no image sits much longer than the
+    threshold. (audio_path/segments kept for signature stability.)
     """
-    times = [(float(s.start), float(s.end)) for s in segments
-             if float(s.end) > float(s.start)]
-    if not times:
-        step = total_dur / max(n_sentences, 1)
-        spans = [(i * step, (i + 1) * step) for i in range(n_sentences)]
+    if sent_words and len(sent_words) == n_sentences and sum(sent_words) > 0:
+        total_w = float(sum(sent_words))
+        expected = [0.0]
+        acc = 0
+        for c in sent_words[:-1]:
+            acc += c
+            expected.append(total_dur * acc / total_w)
+        expected.append(total_dur)
     else:
-        segs = [[s, e] for s, e in times]
-        while len(segs) > n_sentences:
-            gaps = [segs[i + 1][0] - segs[i][1]
-                    for i in range(len(segs) - 1)]
-            k = min(range(len(gaps)), key=lambda i: gaps[i])
-            segs[k:k + 2] = [[segs[k][0], segs[k + 1][1]]]
-        while len(segs) < n_sentences:
-            k = max(range(len(segs)),
-                    key=lambda i: segs[i][1] - segs[i][0])
-            s, e = segs[k]
-            segs[k:k + 1] = [[s, (s + e) / 2.0], [(s + e) / 2.0, e]]
-        bounds = [0.0]
-        for i in range(len(segs) - 1):
-            bounds.append((segs[i][1] + segs[i + 1][0]) / 2.0)
-        bounds.append(total_dur)
-        spans = [(bounds[i], bounds[i + 1]) for i in range(n_sentences)]
+        step = total_dur / max(n_sentences, 1)
+        expected = [i * step for i in range(n_sentences + 1)]
+
+    gaps = []  # (size, start, end) of pauses between consecutive words
+    for i in range(len(words) - 1):
+        g = words[i + 1][0] - words[i][1]
+        if g > 0.05:
+            gaps.append((g, words[i][1], words[i + 1][0]))
+
+    bounds = [0.0]
+    for k in range(1, n_sentences):
+        exp = expected[k]
+        lo = max(bounds[-1] + 0.8, exp - 2.5)
+        hi = min(total_dur - 0.8 * (n_sentences - k), exp + 2.5)
+        cand = [g for g in gaps if lo <= (g[1] + g[2]) / 2.0 <= hi]
+        if cand:
+            g = max(cand, key=lambda t: t[0])
+            bounds.append((g[1] + g[2]) / 2.0)
+        else:
+            bounds.append(min(max(exp, lo), hi))
+    bounds.append(total_dur)
+    spans = [(bounds[i], bounds[i + 1]) for i in range(n_sentences)]
+
+    def split_span(s, e):
+        n = max(1, math.ceil((e - s) / threshold - 1e-9))
+        if n == 1:
+            return [(s, e)]
+        inside = sorted(
+            (g for g in gaps if s + 1.6 <= (g[1] + g[2]) / 2.0 <= e - 1.6),
+            key=lambda t: -t[0])
+        cuts = []
+        for g in inside:
+            mid = (g[1] + g[2]) / 2.0
+            if all(abs(mid - c) >= 1.6 for c in cuts):
+                cuts.append(mid)
+            if len(cuts) == n - 1:
+                break
+        while len(cuts) < n - 1:
+            edges = [s] + sorted(cuts) + [e]
+            k = max(range(len(edges) - 1),
+                    key=lambda i: edges[i + 1] - edges[i])
+            cuts.append((edges[k] + edges[k + 1]) / 2.0)
+        pts = [s] + sorted(cuts) + [e]
+        return [(pts[i], pts[i + 1]) for i in range(len(pts) - 1)]
+
     slots = []
     for si, (s, e) in enumerate(spans):
-        if e - s > threshold:
-            inside = [(words[i + 1][0] - words[i][1], i)
-                      for i in range(len(words) - 1)
-                      if words[i][1] >= s and words[i + 1][0] <= e]
-            mid = (s + e) / 2.0
-            if inside:
-                gi = max(inside, key=lambda t: t[0])[1]
-                cand = (words[gi][1] + words[gi + 1][0]) / 2.0
-                if s + 2.2 < cand < e - 2.2:
-                    mid = cand
-            slots.append((s, mid, si))
-            slots.append((mid, e, si))
-        else:
-            slots.append((s, e, si))
-    return spans, slots
+        for (a, b) in split_span(s, e):
+            slots.append((a, b, si))
+    # Hard guarantee: no image ever sits longer than threshold + 1s.
+    fixed = []
+    for (a, b, si) in slots:
+        while b - a > threshold + 1.0:
+            mid = (a + b) / 2.0
+            fixed.append((a, mid, si))
+            a = mid
+        fixed.append((a, b, si))
+    return spans, fixed
 
 
 def make_image_clip(img, dur, out_mp4):
@@ -156,8 +190,9 @@ def main():
     print(f"Narration ready: {total:.2f}s", flush=True)
 
     words, wsegs = transcribe_words(narration)
+    sent_words = [len(normalize_fa(it["text"])) for it in items]
     spans, slots = compute_slots(narration, words, wsegs, total,
-                                 len(items))
+                                 len(items), sent_words=sent_words)
     for i, (s, e) in enumerate(spans, 1):
         print(f"sentence {i}: {s:.2f} -> {e:.2f} ({e - s:.2f}s)", flush=True)
     print(f"{len(slots)} image slots (threshold {SPLIT_THRESHOLD}s)",
