@@ -1,0 +1,32 @@
+name: Character Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chartest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Generate reference character and two scenes
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID_2: ${{ secrets.CLOUDFLARE_ACCOUNT_ID_2 }}
+          CF_API_TOKEN_2: ${{ secrets.CLOUDFLARE_API_TOKEN_2 }}
+          CF_ACCOUNT_ID_3: ${{ secrets.CLOUDFLARE_ACCOUNT_ID_3 }}
+          CF_API_TOKEN_3: ${{ secrets.CLOUDFLARE_API_TOKEN_3 }}
+        run: python tools/char_test.py
+      - name: Upload character test images
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: char-test
+          path: char/*.png
