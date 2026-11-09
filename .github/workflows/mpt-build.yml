@@ -178,7 +178,7 @@ jobs:
               elif mode == "cloudflare" and ln.startswith("openai_image_api_keys"):
                   ln = 'openai_image_api_keys = ["shim-local"]'
               elif mode == "cloudflare" and ln.startswith("openai_image_model"):
-                  ln = 'openai_image_model = "@cf/black-forest-labs/flux-1-schnell"'
+                  ln = 'openai_image_model = "@cf/black-forest-labs/flux-2-klein-4b"'
               elif mode == "cloudflare" and ln.startswith("openai_image_prompt_template"):
                   ln = "openai_image_prompt_template = " + json.dumps(style)
               out.append(ln)

@@ -10,6 +10,7 @@ import os
 import sys
 import urllib.error
 import urllib.request
+import uuid
 
 K1 = "GEMINI" + "_API" + "_KEY"
 A1, T1 = "CF_ACCOUNT_ID", "CF_API_TOKEN"
@@ -54,38 +55,71 @@ def test_gemini():
         verdict("gemini", False, f"FAIL - {type(e).__name__}: {s[:200]}")
 
 
-def test_cf():
-    acc = (os.environ.get(A1) or "").strip()
-    tok = (os.environ.get(T1) or "").strip()
-    if not acc or not tok:
-        verdict("cf", False, "FAIL - account id or token empty/not set")
+def _multipart(fields):
+    boundary = "----cfkt" + uuid.uuid4().hex
+    out = []
+    for name, value in fields:
+        out.append(f"--{boundary}\r\n".encode())
+        out.append(
+            f'Content-Disposition: form-data; name="{name}"\r\n\r\n'
+            .encode())
+        out.append(str(value).encode("utf-8"))
+        out.append(b"\r\n")
+    out.append(f"--{boundary}--\r\n".encode())
+    return b"".join(out), f"multipart/form-data; boundary={boundary}"
+
+
+def _cf_call(acc, tok, model, data, ctype):
+    """Returns (status, detail): PASS / VALID_QUOTA / FAIL."""
     url = ("https://api.cloudflare.com/client/v4/accounts/"
-           f"{acc}/ai/run/@cf/black-forest-labs/flux-1-schnell")
+           f"{acc}/ai/run/{model}")
     req = urllib.request.Request(
-        url, data=json.dumps({"prompt": "a red apple on a table"}).encode(),
-        method="POST",
+        url, data=data, method="POST",
         headers={"Authorization": f"Bearer {tok}",
-                 "Content-Type": "application/json"})
+                 "Content-Type": ctype})
     try:
         with urllib.request.urlopen(req, timeout=180) as resp:
             body = resp.read()
-            ctype = resp.headers.get("Content-Type", "")
-        if ctype.startswith("image/") and len(body) > 1000:
-            verdict("cf", True, f"PASS - image returned ({len(body)} bytes)")
-        data = json.loads(body.decode("utf-8"))
-        if data.get("success"):
-            verdict("cf", True, "PASS - success response")
-        verdict("cf", False, f"FAIL - errors: {data.get('errors')}")
+            rtype = resp.headers.get("Content-Type", "")
+        if rtype.startswith("image/") and len(body) > 1000:
+            return "PASS", f"image returned ({len(body)} bytes)"
+        payload = json.loads(body.decode("utf-8"))
+        if payload.get("success"):
+            return "PASS", "success response"
+        return "FAIL", f"errors: {payload.get('errors')}"
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", "replace")[:300]
         low = detail.lower()
         if e.code == 429 or "4006" in detail or "quota" in low \
                 or "allocation" in low or "neurons" in low:
-            verdict("cf", True,
-                    "VALID_QUOTA - account accepted, daily quota exhausted")
-        verdict("cf", False, f"FAIL - HTTP {e.code}: {detail}")
+            return ("VALID_QUOTA",
+                    "account accepted, daily quota exhausted")
+        return "FAIL", f"HTTP {e.code}: {detail}"
     except Exception as e:  # noqa: BLE001
-        verdict("cf", False, f"FAIL - {type(e).__name__}: {str(e)[:200]}")
+        return "FAIL", f"{type(e).__name__}: {str(e)[:200]}"
+
+
+def test_cf():
+    acc = (os.environ.get(A1) or "").strip()
+    tok = (os.environ.get(T1) or "").strip()
+    if not acc or not tok:
+        verdict("cf", False, "FAIL - account id or token empty/not set")
+    prompt = "a red apple on a table"
+    klein_body, klein_ctype = _multipart(
+        [("prompt", prompt), ("width", "512"), ("height", "512")])
+    cases = (
+        ("cf-schnell", "@cf/black-forest-labs/flux-1-schnell",
+         json.dumps({"prompt": prompt}).encode(), "application/json"),
+        ("cf-klein-4b", "@cf/black-forest-labs/flux-2-klein-4b",
+         klein_body, klein_ctype),
+    )
+    ok = True
+    for label, model, data, ctype in cases:
+        status, detail = _cf_call(acc, tok, model, data, ctype)
+        print(f"VERDICT {label}: {status} - {detail}", flush=True)
+        if status == "FAIL":
+            ok = False
+    sys.exit(0 if ok else 1)
 
 
 if __name__ == "__main__":

@@ -9,7 +9,10 @@ translates between the two inside the GitHub Actions job.
 Env:
   CF_ACCOUNT_ID   Cloudflare account id
   CF_API_TOKEN    Cloudflare API token (Workers AI permission)
-  CF_IMAGE_MODEL  default @cf/black-forest-labs/flux-1-schnell
+  CF_IMAGE_MODEL  default @cf/black-forest-labs/flux-2-klein-4b
+                  (FLUX.2 models take multipart form data with
+                  prompt/width/height; older models take JSON {prompt}.
+                  Set CF_IMAGE_MODEL back to flux-1-schnell to revert.)
   SHIM_PORT       default 8123
 """
 
@@ -19,6 +22,7 @@ import os
 import sys
 import urllib.error
 import urllib.request
+import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 ACCOUNT = os.environ.get("CF_ACCOUNT_ID", "").strip()
@@ -43,16 +47,40 @@ def is_quota_failure(msg):
 
 
 MODEL = os.environ.get(
-    "CF_IMAGE_MODEL", "@cf/black-forest-labs/flux-1-schnell"
+    "CF_IMAGE_MODEL", "@cf/black-forest-labs/flux-2-klein-4b"
 ).strip()
 PORT = int(os.environ.get("SHIM_PORT", "8123"))
+IS_FLUX2 = "flux-2" in MODEL
 
 
-def generate_image(prompt: str) -> bytes:
+def _fit_dim(v) -> int:
+    """Clamp a FLUX.2 dimension to 256..1920, rounded to a multiple of 16."""
+    try:
+        n = int(v)
+    except (TypeError, ValueError):
+        return 1024
+    return max(256, min(1920, int(round(n / 16.0)) * 16))
+
+
+def _multipart(fields) -> tuple:
+    boundary = "----cfshim" + uuid.uuid4().hex
+    out = []
+    for name, value in fields:
+        out.append(f"--{boundary}\r\n".encode())
+        out.append(
+            f'Content-Disposition: form-data; name="{name}"\r\n\r\n'
+            .encode())
+        out.append(str(value).encode("utf-8"))
+        out.append(b"\r\n")
+    out.append(f"--{boundary}--\r\n".encode())
+    return b"".join(out), f"multipart/form-data; boundary={boundary}"
+
+
+def generate_image(prompt: str, width: int = 1024, height: int = 1024) -> bytes:
     last = None
     for i, (acc, tok) in enumerate(ACCOUNTS):
         try:
-            return _generate_with(acc, tok, prompt)
+            return _generate_with(acc, tok, prompt, width, height)
         except Exception as e:  # noqa: BLE001 - try next account on quota
             last = e
             if i + 1 < len(ACCOUNTS) and is_quota_failure(e):
@@ -64,21 +92,31 @@ def generate_image(prompt: str) -> bytes:
     raise RuntimeError(f"all Cloudflare accounts failed: {last}")
 
 
-def _generate_with(ACCOUNT, TOKEN, prompt: str) -> bytes:
+def _generate_with(ACCOUNT, TOKEN, prompt: str,
+                   width: int = 1024, height: int = 1024) -> bytes:
     url = (
         "https://api.cloudflare.com/client/v4/accounts/"
         f"{ACCOUNT}/ai/run/{MODEL}"
     )
-    # NOTE: flux-1-schnell's REST schema rejects extra properties such as
-    # num_steps (AiError 5006). Send the prompt only; defaults apply.
-    payload = json.dumps({"prompt": prompt}).encode("utf-8")
+    if IS_FLUX2:
+        # FLUX.2 models take multipart form data (prompt/width/height);
+        # steps are fixed at 4 for the distilled Klein models.
+        payload, ctype = _multipart(
+            [("prompt", prompt),
+             ("width", str(_fit_dim(width))),
+             ("height", str(_fit_dim(height)))])
+    else:
+        # NOTE: flux-1-schnell's REST schema rejects extra properties such
+        # as num_steps (AiError 5006). Send the prompt only; defaults apply.
+        payload = json.dumps({"prompt": prompt}).encode("utf-8")
+        ctype = "application/json"
     req = urllib.request.Request(
         url,
         data=payload,
         method="POST",
         headers={
             "Authorization": f"Bearer {TOKEN}",
-            "Content-Type": "application/json",
+            "Content-Type": ctype,
         },
     )
     try:
@@ -133,8 +171,13 @@ class Handler(BaseHTTPRequestHandler):
         if not prompt:
             self._json(400, {"error": {"message": "prompt is required"}})
             return
+        width = height = 1024
+        size = str(req.get("size") or "").strip().lower()
+        if "x" in size:
+            _w, _, _h = size.partition("x")
+            width, height = _fit_dim(_w), _fit_dim(_h)
         try:
-            img = generate_image(prompt)
+            img = generate_image(prompt, width, height)
         except Exception as exc:  # upstream failure -> let MPT log/skip
             self._json(
                 502,
