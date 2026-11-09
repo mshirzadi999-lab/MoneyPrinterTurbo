@@ -13,7 +13,13 @@ on:
         type: string
       terms:
         description: "Stock search terms (English, comma separated)"
-        required: true
+        required: false
+        default: "shop"
+        type: string
+      materials:
+        description: "Direct footage URLs (comma separated). If set, API sources are skipped."
+        required: false
+        default: ""
         type: string
       voice:
         description: "TTS voice name"
@@ -89,7 +95,37 @@ jobs:
           print("pexels keys:", len(pex), "| pixabay keys:", len(pix), "| source:", source, "| gemini key set:", bool(gem))
           PY
 
-      - name: Build video
+      - name: Download provided materials
+        if: ${{ inputs.materials != '' }}
+        env:
+          MATERIALS: ${{ inputs.materials }}
+        run: |
+          mkdir -p materials
+          i=0
+          LIST=""
+          IFS=',' read -ra URLS <<< "$MATERIALS"
+          for u in "${URLS[@]}"; do
+            i=$((i+1))
+            f=$(printf "materials/clip%02d.mp4" "$i")
+            echo "Downloading $u -> $f"
+            curl -fL --retry 3 -o "$f" "$u"
+            LIST="${LIST:+$LIST,}$f"
+          done
+          echo "MATERIALS_LIST=$LIST" >> "$GITHUB_ENV"
+          ls -la materials
+
+      - name: Build video (local materials)
+        if: ${{ inputs.materials != '' }}
+        env:
+          SUBJECT: ${{ inputs.subject }}
+          SCRIPT: ${{ inputs.script }}
+          VOICE: ${{ inputs.voice }}
+          ASPECT: ${{ inputs.aspect }}
+        run: |
+          python cli.py --video-subject "$SUBJECT" --video-script "$SCRIPT" --video-source local --video-materials "$MATERIALS_LIST" --voice-name "$VOICE" --video-aspect "$ASPECT" --video-count 1 --subtitle-enabled
+
+      - name: Build video (API source)
+        if: ${{ inputs.materials == '' }}
         env:
           SUBJECT: ${{ inputs.subject }}
           SCRIPT: ${{ inputs.script }}
