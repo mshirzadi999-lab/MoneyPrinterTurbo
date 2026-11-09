@@ -56,28 +56,34 @@ def probe_duration(path):
     return float(out.stdout.strip())
 
 
+STYLE_MODE = {"mode": "system"}
+
+
 def tts(text, voice, style, out_wav):
     from google import genai
     from google.genai import types
 
     if ("GEMINI" + "_API_KEY") not in os.environ:
         raise RuntimeError("Gemini key secret is not set")
-    # key is read by the SDK from the environment automatically
-    prompt = (style.rstrip() + " " + text) if style else text
     last = None
-    for attempt in range(3):
+    for attempt in range(4):
+        use_system = bool(style) and STYLE_MODE["mode"] == "system"
+        contents = text if use_system else (
+            (style.rstrip() + " " + text) if style else text)
         try:
             client = genai.Client()
+            cfg = {
+                "response_modalities": ["AUDIO"],
+                "speech_config": types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name=voice))),
+            }
+            if use_system:
+                cfg["system_instruction"] = style
             resp = client.models.generate_content(
-                model=MODEL,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_modalities=["AUDIO"],
-                    speech_config=types.SpeechConfig(
-                        voice_config=types.VoiceConfig(
-                            prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                                voice_name=voice)))),
-            )
+                model=MODEL, contents=contents,
+                config=types.GenerateContentConfig(**cfg))
             cand = resp.candidates[0] if resp.candidates else None
             data, rate = None, 24000
             for part in (getattr(getattr(cand, "content", None), "parts", None) or []):
@@ -97,8 +103,13 @@ def tts(text, voice, style, out_wav):
                 wf.setframerate(rate)
                 wf.writeframes(data)
             return
-        except Exception as e:  # noqa: BLE001 - retry with backoff, then surface
+        except Exception as e:  # noqa: BLE001 - retry / fall back, then surface
             last = e
+            if use_system:
+                STYLE_MODE["mode"] = "prepend"
+                print(f"system_instruction mode failed ({e}); "
+                      "switching to prepend mode", flush=True)
+                continue
             print(f"TTS attempt {attempt + 1} failed: {e}", flush=True)
             time.sleep(30 * (attempt + 1))
     raise RuntimeError(f"TTS failed after retries: {last}")
