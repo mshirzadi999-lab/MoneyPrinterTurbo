@@ -39,3 +39,10 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID_2 }}
           CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_2 }}
         run: python tools/key_test.py cf
+
+      - name: Cloudflare account 3
+        continue-on-error: true
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID_3 }}
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_3 }}
+        run: python tools/key_test.py cf

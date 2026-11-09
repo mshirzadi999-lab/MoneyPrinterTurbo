@@ -195,6 +195,8 @@ jobs:
           CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT_ID_2: ${{ secrets.CLOUDFLARE_ACCOUNT_ID_2 }}
           CF_API_TOKEN_2: ${{ secrets.CLOUDFLARE_API_TOKEN_2 }}
+          CF_ACCOUNT_ID_3: ${{ secrets.CLOUDFLARE_ACCOUNT_ID_3 }}
+          CF_API_TOKEN_3: ${{ secrets.CLOUDFLARE_API_TOKEN_3 }}
         run: |
           nohup python3 tools/cf_image_shim.py > shim.log 2>&1 &
           for i in $(seq 1 30); do

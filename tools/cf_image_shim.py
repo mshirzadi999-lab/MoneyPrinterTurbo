@@ -25,7 +25,8 @@ ACCOUNT = os.environ.get("CF_ACCOUNT_ID", "").strip()
 TOKEN = os.environ.get("CF_API_TOKEN", "").strip()
 ACCOUNTS = []
 for _a, _t in (("CF_ACCOUNT_ID", "CF_API_TOKEN"),
-               ("CF_ACCOUNT_ID_2", "CF_API_TOKEN_2")):
+               ("CF_ACCOUNT_ID_2", "CF_API_TOKEN_2"),
+               ("CF_ACCOUNT_ID_3", "CF_API_TOKEN_3")):
     _av = os.environ.get(_a, "").strip()
     _tv = os.environ.get(_t, "").strip()
     if _av and _tv:
