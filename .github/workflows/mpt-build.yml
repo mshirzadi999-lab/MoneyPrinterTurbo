@@ -66,6 +66,7 @@ jobs:
         env:
           PEXELS_API_KEYS: ${{ secrets.PEXELS_API_KEYS }}
           PIXABAY_API_KEYS: ${{ secrets.PIXABAY_API_KEYS }}
+          COVERR_API_KEYS: ${{ secrets.COVERR_API_KEYS }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           cp config.example.toml config.toml
@@ -73,8 +74,9 @@ jobs:
           import os, json
           pex = [k.strip() for k in os.environ.get("PEXELS_API_KEYS", "").split(",") if k.strip()]
           pix = [k.strip() for k in os.environ.get("PIXABAY_API_KEYS", "").split(",") if k.strip()]
+          cov = [k.strip() for k in os.environ.get("COVERR_API_KEYS", "").split(",") if k.strip()]
           gem = os.environ.get("GEMINI_API_KEY", "").strip()
-          source = "pexels" if pex else ("pixabay" if pix else "pexels")
+          source = "pexels" if pex else ("pixabay" if pix else ("coverr" if cov else "pexels"))
           lines = open("config.toml", encoding="utf-8").read().splitlines()
           out = []
           for ln in lines:
@@ -82,6 +84,8 @@ jobs:
                   ln = "pexels_api_keys = " + json.dumps(pex)
               elif ln.startswith("pixabay_api_keys"):
                   ln = "pixabay_api_keys = " + json.dumps(pix)
+              elif ln.startswith("coverr_api_keys"):
+                  ln = "coverr_api_keys = " + json.dumps(cov)
               elif ln.startswith("gemini_api_key"):
                   ln = 'gemini_api_key = "' + gem + '"'
               elif ln.startswith("llm_provider"):
