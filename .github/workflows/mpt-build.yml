@@ -83,6 +83,11 @@ on:
           - "mpt"
           - "segmented"
           - "timed"
+      audio_run_id:
+        description: "Timed mode only: reuse the narration from this earlier run id (skips Gemini TTS)"
+        required: false
+        default: ""
+        type: string
       segments:
         description: "Segmented mode only: one line per sentence: <sentence> ||| <image prompt>"
         required: false
@@ -101,6 +106,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   build:
@@ -260,10 +266,22 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python tools/segmented_build.py
 
+      - name: Fetch preset narration
+        if: ${{ inputs.builder == 'timed' && inputs.audio_run_id != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download "${{ inputs.audio_run_id }}" -n mpt-video -D prerun-audio
+          MP4=$(find prerun-audio -name "final-1.mp4" | head -1)
+          echo "preset narration source: $MP4"
+          ffmpeg -y -v error -i "$MP4" -vn -ac 1 -ar 24000 preset-narration.wav
+          echo "NARRATION_FILE=$PWD/preset-narration.wav" >> "$GITHUB_ENV"
+
       - name: Build video (timed)
         if: ${{ inputs.builder == 'timed' }}
         env:
           SEGMENTS: ${{ inputs.segments }}
+          NARRATION_FILE: ${{ env.NARRATION_FILE }}
           VOICE: ${{ inputs.voice }}
           SPEED: ${{ inputs.speed }}
           STYLE_PROMPT: ${{ inputs.style_prompt }}

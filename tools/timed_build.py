@@ -140,7 +140,13 @@ def main():
           f"speed {speed}", flush=True)
 
     narration = os.path.join(OUT_DIR, "narration.wav")
-    sb.tts(full_text, voice, style, narration)
+    preset = os.environ.get("NARRATION_FILE", "")
+    if preset and os.path.exists(preset):
+        import shutil
+        print(f"Using preset narration: {preset}", flush=True)
+        shutil.copy(preset, narration)
+    else:
+        sb.tts(full_text, voice, style, narration)
     if abs(speed - 1.0) > 0.001:
         sped = os.path.join(OUT_DIR, "narration-s.wav")
         sb.run(["ffmpeg", "-y", "-i", narration, "-filter:a",
