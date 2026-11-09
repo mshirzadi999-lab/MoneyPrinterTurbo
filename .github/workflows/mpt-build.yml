@@ -1,0 +1,102 @@
+name: MPT Build Video
+
+on:
+  workflow_dispatch:
+    inputs:
+      subject:
+        description: "Video subject label"
+        required: true
+        type: string
+      script:
+        description: "Full narration script"
+        required: true
+        type: string
+      terms:
+        description: "Stock search terms (English, comma separated)"
+        required: true
+        type: string
+      voice:
+        description: "TTS voice name"
+        required: false
+        default: "fa-IR-FaridNeural"
+        type: string
+      aspect:
+        description: "Video aspect"
+        required: false
+        default: "9:16"
+        type: choice
+        options:
+          - "9:16"
+          - "16:9"
+          - "1:1"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg > /dev/null
+          ffmpeg -version | head -1
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Write config.toml from secrets
+        env:
+          PEXELS_API_KEYS: ${{ secrets.PEXELS_API_KEYS }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          cp config.example.toml config.toml
+          python3 - <<'PY'
+          import os, json
+          pex = [k.strip() for k in os.environ.get("PEXELS_API_KEYS", "").split(",") if k.strip()]
+          gem = os.environ.get("GEMINI_API_KEY", "").strip()
+          lines = open("config.toml", encoding="utf-8").read().splitlines()
+          out = []
+          for ln in lines:
+              if ln.startswith("pexels_api_keys"):
+                  ln = "pexels_api_keys = " + json.dumps(pex)
+              elif ln.startswith("gemini_api_key"):
+                  ln = 'gemini_api_key = "' + gem + '"'
+              elif ln.startswith("llm_provider"):
+                  ln = 'llm_provider = "gemini"'
+              elif ln.startswith("video_source"):
+                  ln = 'video_source = "pexels"'
+              out.append(ln)
+          open("config.toml", "w", encoding="utf-8").write("\n".join(out) + "\n")
+          print("pexels keys:", len(pex), "| gemini key set:", bool(gem))
+          PY
+
+      - name: Build video
+        env:
+          SUBJECT: ${{ inputs.subject }}
+          SCRIPT: ${{ inputs.script }}
+          TERMS: ${{ inputs.terms }}
+          VOICE: ${{ inputs.voice }}
+          ASPECT: ${{ inputs.aspect }}
+        run: |
+          python cli.py --video-subject "$SUBJECT" --video-script "$SCRIPT" --video-terms "$TERMS" --video-source pexels --voice-name "$VOICE" --video-aspect "$ASPECT" --video-count 1 --subtitle-enabled
+
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpt-video
+          path: |
+            storage/tasks/**/*.mp4
+          if-no-files-found: warn
