@@ -143,16 +143,24 @@ def tts(text, voice, style, out_wav):
 
 def gen_image(prompt, out_png):
     body = json.dumps({"prompt": prompt}).encode()
-    req = urllib.request.Request(
-        SHIM + "/images/generations", data=body,
-        headers={"Content-Type": "application/json",
-                 "Authorization": "Bearer shim-local"})
-    with urllib.request.urlopen(req, timeout=300) as r:
-        resp = json.loads(r.read())
-    b64 = resp["data"][0]["b64_json"]
-    with open(out_png, "wb") as f:
-        f.write(base64.b64decode(b64))
-
+    last = None
+    for attempt in range(4):
+        try:
+            req = urllib.request.Request(
+                SHIM + "/images/generations", data=body,
+                headers={"Content-Type": "application/json",
+                         "Authorization": "Bearer shim-local"})
+            with urllib.request.urlopen(req, timeout=300) as r:
+                resp = json.loads(r.read())
+            b64 = resp["data"][0]["b64_json"]
+            with open(out_png, "wb") as f:
+                f.write(base64.b64decode(b64))
+            return
+        except Exception as e:  # noqa: BLE001 - retry transient failures
+            last = e
+            print(f"image attempt {attempt + 1} failed: {e}", flush=True)
+            time.sleep(10 * (attempt + 1))
+    raise RuntimeError(f"image failed after retries: {last}")
 
 def make_segment(img, wav, dur, out_mp4):
     vf = (f"scale={W}:{H}:force_original_aspect_ratio=increase,"
