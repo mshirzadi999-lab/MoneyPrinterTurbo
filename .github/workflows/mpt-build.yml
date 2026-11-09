@@ -59,27 +59,34 @@ jobs:
       - name: Write config.toml from secrets
         env:
           PEXELS_API_KEYS: ${{ secrets.PEXELS_API_KEYS }}
+          PIXABAY_API_KEYS: ${{ secrets.PIXABAY_API_KEYS }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           cp config.example.toml config.toml
           python3 - <<'PY'
           import os, json
           pex = [k.strip() for k in os.environ.get("PEXELS_API_KEYS", "").split(",") if k.strip()]
+          pix = [k.strip() for k in os.environ.get("PIXABAY_API_KEYS", "").split(",") if k.strip()]
           gem = os.environ.get("GEMINI_API_KEY", "").strip()
+          source = "pexels" if pex else ("pixabay" if pix else "pexels")
           lines = open("config.toml", encoding="utf-8").read().splitlines()
           out = []
           for ln in lines:
               if ln.startswith("pexels_api_keys"):
                   ln = "pexels_api_keys = " + json.dumps(pex)
+              elif ln.startswith("pixabay_api_keys"):
+                  ln = "pixabay_api_keys = " + json.dumps(pix)
               elif ln.startswith("gemini_api_key"):
                   ln = 'gemini_api_key = "' + gem + '"'
               elif ln.startswith("llm_provider"):
                   ln = 'llm_provider = "gemini"'
               elif ln.startswith("video_source"):
-                  ln = 'video_source = "pexels"'
+                  ln = 'video_source = "' + source + '"'
               out.append(ln)
           open("config.toml", "w", encoding="utf-8").write("\n".join(out) + "\n")
-          print("pexels keys:", len(pex), "| gemini key set:", bool(gem))
+          with open(os.environ["GITHUB_ENV"], "a") as f:
+              f.write("VIDEO_SOURCE=" + source + "\n")
+          print("pexels keys:", len(pex), "| pixabay keys:", len(pix), "| source:", source, "| gemini key set:", bool(gem))
           PY
 
       - name: Build video
@@ -90,7 +97,7 @@ jobs:
           VOICE: ${{ inputs.voice }}
           ASPECT: ${{ inputs.aspect }}
         run: |
-          python cli.py --video-subject "$SUBJECT" --video-script "$SCRIPT" --video-terms "$TERMS" --video-source pexels --voice-name "$VOICE" --video-aspect "$ASPECT" --video-count 1 --subtitle-enabled
+          python cli.py --video-subject "$SUBJECT" --video-script "$SCRIPT" --video-terms "$TERMS" --video-source "$VIDEO_SOURCE" --voice-name "$VOICE" --video-aspect "$ASPECT" --video-count 1 --subtitle-enabled
 
       - name: Upload result
         if: always()
