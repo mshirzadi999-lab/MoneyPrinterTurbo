@@ -75,13 +75,14 @@ on:
         default: "minimal flat vector illustration of {term}, centered composition, soft beige background, muted teal and orange accents, simple clean shapes, no text, no letters, no words, no watermark"
         type: string
       builder:
-        description: "mpt = MoneyPrinterTurbo pipeline, segmented = per-sentence build (Gemini voice + generated images, exact sync)"
+        description: "mpt = MoneyPrinterTurbo pipeline, segmented = per-sentence build, timed = one-piece voice + auto sequencing (6s rule)"
         required: false
         default: "mpt"
         type: choice
         options:
           - "mpt"
           - "segmented"
+          - "timed"
       segments:
         description: "Segmented mode only: one line per sentence: <sentence> ||| <image prompt>"
         required: false
@@ -176,7 +177,7 @@ jobs:
           PY
 
       - name: Start Cloudflare image shim
-        if: ${{ inputs.source_mode == 'cloudflare' || inputs.builder == 'segmented' }}
+        if: ${{ inputs.source_mode == 'cloudflare' || inputs.builder != 'mpt' }}
         env:
           CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -258,6 +259,17 @@ jobs:
           IMAGE_STYLE: ${{ inputs.image_style }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python tools/segmented_build.py
+
+      - name: Build video (timed)
+        if: ${{ inputs.builder == 'timed' }}
+        env:
+          SEGMENTS: ${{ inputs.segments }}
+          VOICE: ${{ inputs.voice }}
+          SPEED: ${{ inputs.speed }}
+          STYLE_PROMPT: ${{ inputs.style_prompt }}
+          IMAGE_STYLE: ${{ inputs.image_style }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python tools/timed_build.py
 
       - name: Upload result
         if: always()
