@@ -165,6 +165,12 @@ jobs:
           done
           curl -sf http://127.0.0.1:8123/health
           cat shim.log
+          echo "Smoke test: one image through the shim"
+          SMOKE=$(curl -s -X POST http://127.0.0.1:8123/v1/images/generations -H "Content-Type: application/json" -d '{"prompt":"a red apple on a wooden table"}')
+          echo "$SMOKE" | head -c 300
+          echo
+          if echo "$SMOKE" | grep -q '"error"'; then echo "SMOKE FAILED"; cat shim.log; exit 1; fi
+          echo "SMOKE OK (response chars: ${#SMOKE})"
 
       - name: Download provided materials
         if: ${{ inputs.materials != '' }}

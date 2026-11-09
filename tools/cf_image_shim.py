@@ -44,9 +44,15 @@ def generate_image(prompt: str) -> bytes:
             "Content-Type": "application/json",
         },
     )
-    with urllib.request.urlopen(req, timeout=180) as resp:
-        ctype = resp.headers.get("Content-Type", "")
-        body = resp.read()
+    try:
+        with urllib.request.urlopen(req, timeout=180) as resp:
+            ctype = resp.headers.get("Content-Type", "")
+            body = resp.read()
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", "replace")[:500]
+        raise RuntimeError(
+            f"cloudflare HTTP {exc.code}: {detail}"
+        ) from exc
     if ctype.startswith("image/"):
         return body
     data = json.loads(body.decode("utf-8"))
