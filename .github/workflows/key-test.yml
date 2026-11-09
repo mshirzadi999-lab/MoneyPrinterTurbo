@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install Gemini SDK
-        run: pip install -q google-genai
+        run: pip install -q "google-genai==2.11.0"
       - name: Gemini key 1
         continue-on-error: true
         env:
