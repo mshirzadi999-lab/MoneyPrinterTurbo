@@ -201,9 +201,10 @@ def main():
     final = os.path.join(OUT_DIR, "final-1.mp4")
     dur = sb.probe_duration(mixed)
     fade_st = max(dur - 0.6, 0)
-    sb.run(["ffmpeg", "-y", "-i", mixed, "-map", "0:v", "-map", "0:a",
+    sb.run(["ffmpeg", "-y", "-i", mixed,
             "-filter_complex",
-            f"[1:a]afade=t=out:st={fade_st:.3f}:d=0.6[a]",
+            f"[0:a]afade=t=out:st={fade_st:.3f}:d=0.6[a]",
+            "-map", "0:v", "-map", "[a]",
             "-c:v", "copy", "-c:a", "aac", "-ar", "48000", final])
     print(f"DONE {final} duration={sb.probe_duration(final):.2f}s",
           flush=True)
