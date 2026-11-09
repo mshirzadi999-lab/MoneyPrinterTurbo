@@ -5,7 +5,7 @@
   2. Optional speed-up (atempo, pitch preserved) applied to the narration.
   3. Sentence boundaries measured from the actual audio (faster-whisper
      word timestamps -> largest inter-word gaps are the sentence pauses).
-  4. Mehdi's 6-second rule: a sentence up to SPLIT_THRESHOLD seconds gets
+  4. Mehdi's 5-second rule: a sentence up to SPLIT_THRESHOLD seconds gets
      ONE image; a longer sentence is split into TWO image slots at its
      largest internal pause.
   5. One generated image per slot (Cloudflare shim), held for exactly its
@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import segmented_build as sb  # noqa: E402  (reuse tts/image/ffmpeg helpers)
 
 OUT_DIR = os.path.join("storage", "tasks", "timed")
-SPLIT_THRESHOLD = float(os.environ.get("SPLIT_THRESHOLD", "6.0"))
+SPLIT_THRESHOLD = float(os.environ.get("SPLIT_THRESHOLD", "5.0"))
 
 
 def normalize_fa(text):
