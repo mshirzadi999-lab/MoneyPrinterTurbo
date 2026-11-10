@@ -1,0 +1,50 @@
+name: Sync Repos
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+# This workflow lives in both repos but only ever runs on the mirror.
+# The copy in the original repo stays inert.
+jobs:
+  sync:
+    if: github.repository == 'mshirzadi999-lab/MoneyPrinterTurbo-mirror'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: repo-sync
+      cancel-in-progress: false
+    steps:
+      - name: Checkout mirror (full history)
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SYNC_TOKEN }}
+          fetch-depth: 0
+
+      - name: Sync main both ways (fast-forward only)
+        env:
+          TOKEN: ${{ secrets.SYNC_TOKEN }}
+        run: |
+          set -e
+          git remote add orig "https://x-access-token:${TOKEN}@github.com/mshirzadi999-lab/MoneyPrinterTurbo.git"
+          git fetch orig main
+          git fetch origin main
+          LOCAL=$(git rev-parse origin/main)
+          REMOTE=$(git rev-parse orig/main)
+          echo "mirror=$LOCAL original=$REMOTE"
+          if [ "$LOCAL" = "$REMOTE" ]; then
+            echo "Already in sync."
+            exit 0
+          fi
+          if git merge-base --is-ancestor "$REMOTE" "$LOCAL"; then
+            echo "Mirror is ahead -> pushing to original"
+            git push orig "${LOCAL}:main"
+          elif git merge-base --is-ancestor "$LOCAL" "$REMOTE"; then
+            echo "Original is ahead -> pushing to mirror"
+            git push origin "${REMOTE}:main"
+          else
+            echo "::error::Repos have diverged on main; manual reconciliation needed."
+            exit 1
+          fi
