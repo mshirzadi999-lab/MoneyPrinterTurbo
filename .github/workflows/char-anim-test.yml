@@ -1,0 +1,87 @@
+name: Character Anim Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  charanim:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system deps (ffmpeg, cairo, pango)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libcairo2-dev libpango1.0-dev pkg-config
+
+      - name: Install Python deps
+        run: pip install -q manim pillow
+
+      - name: Generate jungle background via Cloudflare shim
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID_2: ${{ secrets.CLOUDFLARE_ACCOUNT_ID_2 }}
+          CF_API_TOKEN_2: ${{ secrets.CLOUDFLARE_API_TOKEN_2 }}
+          CF_ACCOUNT_ID_3: ${{ secrets.CLOUDFLARE_ACCOUNT_ID_3 }}
+          CF_API_TOKEN_3: ${{ secrets.CLOUDFLARE_API_TOKEN_3 }}
+        run: |
+          mkdir -p char-anim
+          nohup python3 tools/cf_image_shim.py > shim.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8123/health > /dev/null; then echo "shim is up"; break; fi
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8123/health
+          curl -s -X POST http://127.0.0.1:8123/v1/images/generations \
+            -H "Content-Type: application/json" \
+            -d '{"prompt":"lush Amazon rainforest jungle interior, dense emerald foliage, towering trees with hanging vines, soft god rays through the canopy, rich vibrant greens, detailed digital illustration, vertical composition, no text, no letters, no words, no watermark","size":"1088x1920"}' \
+            > char-anim/resp.json
+          python3 - <<'EOF'
+          import base64, json, sys
+          resp = json.load(open("char-anim/resp.json"))
+          if "error" in resp or not resp.get("data"):
+              print("IMAGE GENERATION FAILED:", json.dumps(resp)[:500])
+              sys.exit(1)
+          open("char-anim/jungle.png", "wb").write(
+              base64.b64decode(resp["data"][0]["b64_json"]))
+          print("jungle.png written")
+          EOF
+
+      - name: Render character (Manim, transparent PNG sequence)
+        run: |
+          python -m manim render -t --format=png-sequence \
+            --media_dir media tools/char_anim.py CharAnimScene
+          ls media/images/char_anim/CharAnimScene | head -3
+          ls media/images/char_anim/CharAnimScene | wc -l
+
+      - name: Composite preview over jungle background
+        run: |
+          ffmpeg -y -loop 1 -framerate 30 -i char-anim/jungle.png \
+            -framerate 30 -i media/images/char_anim/CharAnimScene/%04d.png \
+            -filter_complex "[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920[bg];[bg][1:v]overlay=0:0:format=auto,format=yuv420p[v]" \
+            -map "[v]" -r 30 -t 5 -c:v libx264 -crf 20 char-anim/preview.mp4
+          ffmpeg -y -v error -ss 1 -i char-anim/preview.mp4 -frames:v 1 char-anim/frame_1s.png
+          ffmpeg -y -v error -ss 2.5 -i char-anim/preview.mp4 -frames:v 1 char-anim/frame_2p5s.png
+          ffmpeg -y -v error -ss 4 -i char-anim/preview.mp4 -frames:v 1 char-anim/frame_4s.png
+          ffprobe -v error -show_entries format=duration -show_entries stream=width,height \
+            -of default=noprint_wrappers=1 char-anim/preview.mp4
+
+      - name: Upload character anim test
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: char-anim-test
+          path: |
+            char-anim/preview.mp4
+            char-anim/frame_1s.png
+            char-anim/frame_2p5s.png
+            char-anim/frame_4s.png
+            char-anim/jungle.png
