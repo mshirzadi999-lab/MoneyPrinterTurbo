@@ -1,0 +1,47 @@
+name: TTS One-Piece Narration
+
+on:
+  workflow_dispatch:
+    inputs:
+      text:
+        description: "Full narration text (recorded in ONE TTS call)"
+        required: true
+        type: string
+      voice:
+        description: "TTS voice, e.g. gemini:Zubenelgenubi"
+        required: false
+        default: "gemini:Zubenelgenubi"
+        type: string
+      style_prompt:
+        description: "Style instruction (system first, prepend fallback)"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  tts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Gemini SDK
+        run: pip install -q "google-genai==2.11.0"
+      - name: Synthesize one-piece narration
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
+          NARRATION_TEXT: ${{ inputs.text }}
+          VOICE: ${{ inputs.voice }}
+          STYLE_PROMPT: ${{ inputs.style_prompt }}
+        run: python tools/tts_onepiece.py
+      - name: Upload narration
+        uses: actions/upload-artifact@v4
+        with:
+          name: onepiece-narration
+          path: narration_out/
