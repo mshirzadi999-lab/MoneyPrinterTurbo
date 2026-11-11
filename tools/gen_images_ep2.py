@@ -18,9 +18,11 @@ STYLE = ("cinematic painted illustration, moody film-still lighting, "
          "no words, no watermark")
 
 PROMPTS = {
-    "s01": "dark bedroom at night, unmade bed with rumpled blanket and pillow, "
-           "cold blue smartphone light glowing on the pillow, deep shadows, "
-           "tense sleepless mood, vertical composition",
+    "s01": "side view of a bed in a very dark bedroom at night, wooden "
+           "headboard and one pillow on the left, a long rumpled dark blue "
+           "blanket along the bed, the bed low in the frame with plain dark "
+           "wall above it, cold blue moonlight, deep shadows, tense sleepless "
+           "mood, no phone, no smartphone, vertical composition",
     "s02": "bedroom at grey dawn, unmade bed, pale morning light through a "
            "window with curtains, a smartphone lying on the pillow, quiet "
            "heavy mood, vertical composition",
