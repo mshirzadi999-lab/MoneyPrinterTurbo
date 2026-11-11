@@ -97,6 +97,55 @@ PROMPTS = {
            "path with warm sunrise light breaking through trees, long "
            "soft shadows, fresh golden air, sense of release and quiet "
            "achievement, empty scene, no people, no text",
+    # Style-hardening pass (manager): same scenes as s02/s05a/s06/s08 but
+    # with a multi-layer painterly push, keys end in "p".
+    "s02p": "hand-painted cinematic matte painting, vertical 9:16, a tall "
+            "window taking most of the frame, endless flat overcast grey "
+            "sky outside merging into one flat grey horizon, no sun, "
+            "faint painted condensation smears on the glass, cold "
+            "desaturated grey light, sense of a day that will never "
+            "change, heavy still mood, painterly illustration with "
+            "clearly visible broad brushstrokes and dry-brush texture, "
+            "stylized simplified shapes, soft painted edges, flat washes "
+            "of color, gouache painting look, 2D animation background "
+            "art, absolutely NOT photorealistic, not a photograph, no "
+            "photographic detail, no camera look, empty scene, no "
+            "people, no text",
+    "s05ap": "hand-painted cinematic matte painting, vertical 9:16, "
+             "window with fogged glass looking onto a grey street, "
+             "softly painted rooftops fading into mist, simplified "
+             "building shapes, waiting and longing mood, cold grey "
+             "tones, painterly illustration with clearly visible broad "
+             "brushstrokes and dry-brush texture, stylized simplified "
+             "shapes, soft painted edges, flat washes of color, gouache "
+             "painting look, 2D animation background art, absolutely "
+             "NOT photorealistic, not a photograph, no photographic "
+             "detail, no camera bokeh, empty scene, no people, no text",
+    "s06p": "hand-painted cinematic matte painting, vertical 9:16, the "
+            "same fogged window as before but darker, painted rain "
+            "streaks running down the glass, grey street beyond in "
+            "simplified shapes, light drained away, quiet "
+            "disappointment, cold palette, painterly illustration with "
+            "clearly visible broad brushstrokes and dry-brush texture, "
+            "stylized simplified shapes, soft painted edges, flat "
+            "washes of color, gouache painting look, 2D animation "
+            "background art, absolutely NOT photorealistic, not a "
+            "photograph, no photographic detail, no camera bokeh, "
+            "empty scene, no people, no text",
+    "s08p": "hand-painted cinematic matte painting, vertical 9:16, "
+            "entryway of a small home, closed front door, a single pair "
+            "of sport sneakers on the floor beside the door covered in "
+            "an exaggerated thick layer of dust with a small cobweb "
+            "between them, grey neglected light, stillness of something "
+            "untouched for weeks, plain blank wall light switches and "
+            "outlet plates, completely blank with absolutely no "
+            "markings, no symbols, no digits and no letters on any "
+            "surface, painterly illustration with clearly visible broad "
+            "brushstrokes and dry-brush texture, stylized simplified "
+            "shapes, soft painted edges, flat washes of color, gouache "
+            "painting look, 2D animation background art, absolutely "
+            "NOT photorealistic, not a photograph, no photographic "
+            "detail, empty scene, no people, no text",
 }
 
 PAIRS = (("CF_ACCOUNT_ID", "CF_API_TOKEN"),
