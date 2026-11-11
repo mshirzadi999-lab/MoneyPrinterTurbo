@@ -132,20 +132,22 @@ PROMPTS = {
             "background art, absolutely NOT photorealistic, not a "
             "photograph, no photographic detail, no camera bokeh, "
             "empty scene, no people, no text",
-    "s08p": "hand-painted cinematic matte painting, vertical 9:16, "
-            "entryway of a small home, closed front door, a single pair "
-            "of sport sneakers on the floor beside the door covered in "
-            "an exaggerated thick layer of dust with a small cobweb "
-            "between them, grey neglected light, stillness of something "
-            "untouched for weeks, plain blank wall light switches and "
-            "outlet plates, completely blank with absolutely no "
-            "markings, no symbols, no digits and no letters on any "
-            "surface, painterly illustration with clearly visible broad "
-            "brushstrokes and dry-brush texture, stylized simplified "
-            "shapes, soft painted edges, flat washes of color, gouache "
-            "painting look, 2D animation background art, absolutely "
-            "NOT photorealistic, not a photograph, no photographic "
-            "detail, empty scene, no people, no text",
+    "s08p": "soft gouache matte painting, hand-painted animation "
+            "background, vertical 9:16, entryway of a small home, the "
+            "front door fully CLOSED and shut inside its frame, a "
+            "single pair of sport sneakers on the plain smooth floor "
+            "in front of the door covered in an exaggerated thick "
+            "layer of dust with a small cobweb between them, cool grey "
+            "neglected light, stillness of something untouched for "
+            "weeks, two plain flat rectangular wall plates with "
+            "completely smooth featureless surfaces, no toggles, no "
+            "slots, no symbols, no markings, no digits and no letters "
+            "on any surface, painterly with clearly visible broad "
+            "brushstrokes, stylized simplified shapes, soft painted "
+            "edges, flat washes of color, NO line art, NO ink outlines, "
+            "NO comic style, NO graphic-novel style, NO halftone dots, "
+            "absolutely NOT photorealistic, not a photograph, no "
+            "photographic detail, empty scene, no people, no text",
 }
 
 PAIRS = (("CF_ACCOUNT_ID", "CF_API_TOKEN"),
