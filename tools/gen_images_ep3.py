@@ -30,9 +30,12 @@ PROMPTS = {
            "scene, no people, no text",
     "s03": "cinematic digital painting, vertical 9:16, corner of the same "
            "grey bedroom in flat morning light, simple wooden chair beside "
-           "a plain wall, round wall clock, still and lifeless air, muted "
-           "grey palette, everyday repetitive mood, empty scene, no "
-           "people, no text, no numbers on the clock face",
+           "a plain wall, round wall clock with a completely blank white "
+           "face, only two simple black hands and short plain tick marks, "
+           "absolutely no numerals, no digits, no letters, no brand marks "
+           "anywhere in the image, still and lifeless air, muted grey "
+           "palette, everyday repetitive mood, empty scene, no people, "
+           "no text",
     "s04": "cinematic digital painting, vertical 9:16, worn armchair in a "
            "dark corner of a room, deep shadows, a folded blanket over one "
            "armrest, single weak grey light from the side, heavy exhausting "
@@ -62,8 +65,9 @@ PROMPTS = {
            "home, closed front door, a single pair of sport sneakers on "
            "the floor beside the door covered in an exaggerated thick "
            "layer of dust with a small cobweb between them, grey neglected "
-           "light, stillness of something untouched for weeks, empty scene, "
-           "no people, no text",
+           "light, stillness of something untouched for weeks, plain blank "
+           "wall light switches with absolutely no markings, no digits and "
+           "no symbols on any surface, empty scene, no people, no text",
     "s09": "cinematic digital painting, vertical 9:16, small desk buried "
            "under exaggerated towering stacks of papers, notebooks and "
            "boxes leaning like a paper mountain, dim grey-brown light, "
