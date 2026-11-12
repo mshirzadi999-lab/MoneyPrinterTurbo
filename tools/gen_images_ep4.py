@@ -36,7 +36,9 @@ PROMPTS = {
           "of warm golden light spilling through the doorway across the "
           "floor into the grey room, strong contrast of cold grey gloom "
           "and the first warm hopeful light, a clear empty floor space "
-          "in the middle and right of the room",
+          "in the middle and right of the room, all walls completely "
+          "plain and bare, absolutely no light switches, no wall plates, "
+          "no sockets, no fixtures, no markings on any wall",
     "t12": "vertical 9:16, small room interior at sunrise transformed by "
            "warmth, a large window with warm golden sunlight flooding "
            "in, long soft golden shadows across a wooden floor, dust "
