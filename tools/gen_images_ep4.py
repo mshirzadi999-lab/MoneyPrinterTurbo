@@ -39,6 +39,38 @@ PROMPTS = {
           "in the middle and right of the room, all walls completely "
           "plain and bare, absolutely no light switches, no wall plates, "
           "no sockets, no fixtures, no markings on any wall",
+    "s06a": "vertical 9:16, corner of a dim grey room, on the wooden "
+            "floor a tall wobbly half-built tower of plain unmarked "
+            "wooden toy blocks leaning dangerously to one side, a few "
+            "plain blocks scattered at its base, the blocks completely "
+            "blank with no letters, no numbers, no symbols, no prints, "
+            "clear empty floor space beside the tower, muted cold "
+            "grey-blue palette, heavy mood of fearing a collapse",
+    "s06b": "vertical 9:16, a bare dim wall in a dark room at night, "
+            "huge vague blurred human-shaped SHADOWS cast across the "
+            "wall as if unseen people stood just out of frame, shadows "
+            "only, absolutely no actual people and no figures, "
+            "oppressive cold blue-grey darkness, a narrow strip of "
+            "empty floor at the bottom, mood of being silently judged",
+    "s06c": "vertical 9:16, a plain wooden desk in a dim room seen "
+            "from the front, on the desk a half-finished jigsaw puzzle "
+            "with scattered plain muted pieces showing no readable "
+            "picture, beside it a half-knitted grey sweater still on "
+            "two knitting needles with a ball of yarn, everything "
+            "unfinished and abandoned mid-work, no letters, no words, "
+            "no printed images anywhere, cold muted light, clear empty "
+            "space behind the desk",
+    "s11b": "vertical 9:16, extreme low angle close view of an empty "
+            "wooden plank floor in a warm dim room, planks running "
+            "away in strong perspective, one long pool of warm amber "
+            "evening light lying across the boards, the whole frame "
+            "filled with empty floor, quiet hopeful mood",
+    "s11c": "vertical 9:16, the same small bedroom at night but warm "
+            "and cozy, an unmade bed along the left wall with a soft "
+            "blanket, warm amber light pooling across the room from "
+            "the right side, deep soft shadows, clear empty floor "
+            "space in the middle and right of the room, all walls "
+            "completely plain and bare, intimate hopeful night mood",
     "t12": "vertical 9:16, small room interior at sunrise transformed by "
            "warmth, a large window with warm golden sunlight flooding "
            "in, long soft golden shadows across a wooden floor, dust "
