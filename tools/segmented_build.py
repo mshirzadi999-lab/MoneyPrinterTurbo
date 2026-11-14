@@ -60,9 +60,11 @@ STYLE_MODE = {"mode": "system"}
 
 
 def gemini_keys():
-    """API keys in failover order: primary first, then the second key."""
+    """API keys in failover order: third key (fresh project) first,
+    then primary, then the second key. Missing env vars are skipped."""
     seen, keys = set(), []
-    for name in ("GEMINI" + "_API" + "_KEY", "GEMINI" + "_API" + "_KEY_2"):
+    for name in ("GEMINI" + "_API" + "_KEY_3", "GEMINI" + "_API" + "_KEY",
+                 "GEMINI" + "_API" + "_KEY_2"):
         v = (os.environ.get(name) or "").strip()
         if v and v not in seen:
             seen.add(v)

@@ -14,7 +14,8 @@ Env:
                   tries it as system_instruction; gemini-3.8-flash-tts
                   rejects that, so it falls back to prepend mode
                   (segmented_build handles both and logs the switch).
-  GEMINI_API_KEY / GEMINI_API_KEY_2  repo secrets (failover inside tts())
+  GEMINI_API_KEY_3 / GEMINI_API_KEY / GEMINI_API_KEY_2  repo secrets
+                  (failover inside tts(); key 3 first when set)
 Output: narration_out/narration_raw.wav, narration_out/meta.json
 """
 import json
