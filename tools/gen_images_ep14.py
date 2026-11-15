@@ -84,10 +84,10 @@ PROMPTS = {
                "in the lower half, one single open notebook with blank "
                "pages showing only faint blank lines and no readable "
                "writing and one single plain pen lying on the notebook "
-               "on the right side of the desk, one single small study "
+               "on the RIGHT side of the desk, one single small study "
                "lamp with a green glass shade at the back right casting "
                "a focused pool of warm light on the notebook, the left "
-               "third of the frame is empty darkness with no person, no "
+               "half of the frame is empty darkness with no person, no "
                "silhouette, no human figure anywhere in the image, "
                "darkness around the desk, only one pen and only one lamp "
                "in the whole scene, no phone, no second lamp",
