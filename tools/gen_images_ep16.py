@@ -137,15 +137,16 @@ PROMPTS = {
                "spot, no readable text, no second laptop, night scene, "
                "not daylight",
     "shot-13": "vertical 9:16, the same room at night, the whole room "
-               "BRIGHT, walls and floor washed in bright white light "
-               "from the laptop screen, a bright white room at night, "
-               "one single open laptop on a wooden desk with a plain "
-               "white screen, the laptop never closed, the white screen "
-               "glowing, one small dark spot still in the far corner of "
-               "the room, the same night, NOT daylight, no window "
-               "daylight, no sun, clear empty space beside the desk "
-               "where a seated person would sit, no readable text, no "
-               "second laptop",
+               "BRIGHT WHITE, pale white walls and pale floor washed in "
+               "bright white light from the laptop screen, a bright "
+               "white room, no dark areas, no door, no doorway, no dark "
+               "opening anywhere, one single open laptop on a wooden "
+               "desk with a plain white screen, the laptop never "
+               "closed, the white screen glowing, one small dark spot "
+               "still in the far corner of the room, the same night, "
+               "NOT daylight, no window daylight, no sun, clear empty "
+               "space beside the desk where a seated person would sit, "
+               "no readable text, no second laptop",
 }
 
 PAIRS = (("CF_ACCOUNT_ID", "CF_API_TOKEN"),
