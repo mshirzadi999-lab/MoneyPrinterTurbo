@@ -87,10 +87,10 @@ PROMPTS = {
                "on the right side of the desk, one single small study "
                "lamp with a green glass shade at the back right casting "
                "a focused pool of warm light on the notebook, the left "
-               "third of the frame is empty dark space for a seated "
-               "person in profile, darkness around the desk, only one "
-               "pen and only one lamp in the whole scene, no phone, no "
-               "second lamp",
+               "third of the frame is empty darkness with no person, no "
+               "silhouette, no human figure anywhere in the image, "
+               "darkness around the desk, only one pen and only one lamp "
+               "in the whole scene, no phone, no second lamp",
     "shot-11": "vertical 9:16, wider view of a living room at night, the "
                "main warm light fading away into darkness, colors sinking "
                "toward black and grey, a plain wall light switch visible "
