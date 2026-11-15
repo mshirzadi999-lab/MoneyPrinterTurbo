@@ -79,12 +79,16 @@ PROMPTS = {
                "around the desk, one small pool of soft light on the desk "
                "surface, feeling of stopping and stillness, no phone, no "
                "notebook",
-    "shot-10": "vertical 9:16, close view of a wooden study desk surface "
-               "at night, one single open notebook with blank pages "
-               "showing only faint blank lines and no readable writing, "
-               "one single plain pen lying on the notebook, a small study "
-               "lamp casting a focused pool of warm light, darkness "
-               "around the desk, only one pen in the whole scene",
+    "shot-10": "vertical 9:16, study desk seen from the side at night, "
+               "the wooden desk occupies the right two-thirds of the "
+               "frame with one single open notebook with blank pages "
+               "showing only faint blank lines and no readable writing "
+               "and one single plain pen lying on the notebook, one "
+               "single small study lamp with a green glass shade casting "
+               "a focused pool of warm light on the notebook, the left "
+               "third of the frame is empty dark space for a seated "
+               "person, darkness around the desk, only one pen and only "
+               "one lamp in the whole scene, no phone, no second lamp",
     "shot-11": "vertical 9:16, wider view of a living room at night, the "
                "main warm light fading away into darkness, colors sinking "
                "toward black and grey, a plain wall light switch visible "
