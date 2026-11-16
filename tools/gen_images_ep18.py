@@ -121,15 +121,30 @@ PROMPTS = {
                "frame where a person would sit close to the camera, "
                "no clock, no door, no table, no chairs, no readable "
                "text, no numbers, no objects, " + NOPEOPLE,
+    # v4: v3 FAIL — FLUX mirrored the chair (back on the LEFT,
+    # seat extending RIGHT, at the table's LEFT end, so the sitter
+    # would face the table and push the papers AWAY from the hero)
+    # and drew a SECOND chair under the table. v4 spells out: chair
+    # on the far RIGHT, back at the far right edge, seat extending
+    # LEFT (sitter faces LEFT toward the door/hero); papers on the
+    # table's LEFT end between hero and stranger; nothing under the
+    # table except its own four legs.
     "shot-06": "vertical 9:16, " + ROOM + ", wide view of the whole "
                "living room, a door on the LEFT side of the frame, "
                "the table on the RIGHT side of the frame with a stack "
-               "of papers on it, " + SIDECHAIR_R + ", at the right "
-               "end of the table, only ONE single chair in the whole "
-               "scene, no second chair, no clock on the wall, dim "
-               "lamplight, clear empty floor space on the LEFT where "
-               "a person would stand near the door and clear empty "
-               "space on the RIGHT where a person would sit at the "
+               "of papers on its LEFT end near the middle of the "
+               "frame, " + SIDECHAIR_R + ", the chair standing at the "
+               "RIGHT end of the table on the far RIGHT side of the "
+               "frame, its back at the far right edge of the frame "
+               "and its seat extending to the LEFT toward the table, "
+               "a person sitting on this chair would face LEFT toward "
+               "the door, only ONE single chair in the whole scene, "
+               "no second chair anywhere, no chair under the table, "
+               "nothing under the table except the table's own four "
+               "legs, no clock on the wall, dim lamplight, clear "
+               "empty floor space on the LEFT where a person would "
+               "stand near the door and clear empty space on the "
+               "RIGHT where a person would sit on the chair at the "
                "table, no readable text, " + NOPEOPLE,
     "shot-07": "vertical 9:16, " + ROOM + ", " + SIDECHAIR_L + ", "
                "standing against a dark wall, the chair completely "
