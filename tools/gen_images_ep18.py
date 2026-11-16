@@ -57,6 +57,17 @@ NOPEOPLE = ("absolutely no person, no head, no hair, no face, no "
             "shoulders, no back of a person, no silhouette of a "
             "person, nobody sitting or standing anywhere")
 
+# FLUX ignores "seen from the side" for chairs (v2 drew front-facing
+# chairs twice); describe the side-profile SHAPE instead: tall
+# vertical back slat on one side, horizontal seat plank extending
+# to the other side.
+SIDECHAIR_L = ("a wooden chair in side profile, its back a tall "
+                "vertical slat on the LEFT, its seat a horizontal "
+                "plank extending to the RIGHT")
+SIDECHAIR_R = ("a wooden chair in side profile, its back a tall "
+                "vertical slat on the RIGHT, its seat a horizontal "
+                "plank extending to the LEFT")
+
 PROMPTS = {
     "shot-01": "vertical 9:16, " + ROOM + ", a door on the RIGHT side "
                "of the frame, the table and chair on the LEFT side of "
