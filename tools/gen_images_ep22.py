@@ -91,9 +91,12 @@ PROMPTS = {
                "empty floor space at the bottom where a person would "
                "stand facing the camera, tense frustrated mood, "
                + NOBANS,
-    "shot-10": "vertical 9:16, " + ROOM + ", the desk on the RIGHT "
-               "with ONE single small blank paper lying flat ON the "
-               "desk, the paper completely blank with no marks, no "
+    "shot-10": "vertical 9:16, " + ROOM + ", a medium view of the desk "
+               "on the RIGHT seen from a distance, the desktop surface "
+               "in the MIDDLE of the frame with a large expanse of wooden "
+               "floor clearly visible BELOW the desk, open space under "
+               "the desk top, ONE single small blank paper lying flat ON "
+               "the desk, the paper completely blank with no marks, no "
                "letters, no lines, clear space in front of the desk "
                "where a person would sit facing right, gentle hopeful "
                "mood, " + NOBANS,
