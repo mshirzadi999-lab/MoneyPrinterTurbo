@@ -29,6 +29,15 @@ only, no numbers. The fridge door is OPEN only in shot 5, with
 empty shelves and plain geometric shapes, no labels. No readable
 text / numbers / logos anywhere, no second vacuum, no second
 fridge, no second clock, no second rug.
+V2 fixes (after v1 inspection): shot-02 vacuum was at the far left
+edge with no room for the walker behind it -- v2 centers it with
+clear floor to the LEFT. Shot-03 door was AJAR (forbidden) -- v2
+stresses FULLY CLOSED, no gap, no light through the edges. Shot-05
+fridge was on the RIGHT but directing puts the kitchen/fridge on the
+LEFT and the character faces left toward it -- v2 moves it LEFT and
+bans small printed marks on the door interior. Shot-06 had a TALL
+BLACK BOOT (forbidden) -- v2 specifies four pairs of LOW flat shoes
+only, no boot above the ankle.
 """
 import base64
 import json
@@ -82,21 +91,29 @@ PROMPTS = {
                + NOBANS,
     "shot-02": "vertical 9:16, " + ROOM + ", " + LIGHT_MORNING + ", "
                "the morning light slightly warmer than the first shot, "
-               + VACUUM + ", clear empty floor space on the rug around "
-               "the vacuum cleaner where a person would walk in "
-               "profile from left to right pushing the vacuum cleaner, "
+               "ONE single upright vacuum cleaner standing on the rug in "
+               "the CENTER of the frame, its body low on the rug and its "
+               "long handle leaning slightly back toward the LEFT, the "
+               "handle clearly visible rising to about chest height, "
+               "only one vacuum cleaner in the whole scene, never two, "
+               "clear empty floor space on the rug to the LEFT of the "
+               "vacuum cleaner where a person would walk in profile "
+               "from left to right pushing the vacuum cleaner, "
                + NOBANS,
     "shot-03": "vertical 9:16, a view down the hallway of the same "
                "apartment, a CLOSED dark wooden door at the far end of "
-               "the hallway in the CENTER-RIGHT of the frame, plain "
-               "empty hallway walls, dimmer light than the living room, "
-               "the hallway darker than the rest of the house, plain "
-               "floor, clear empty floor space in the CENTER of the "
-               "frame where a person would stand in profile facing "
-               "right toward the door, heavy thoughtful mood, a plain "
-               "empty wall band across the very TOP of the frame, "
-               "no door number, no door plate, no readable text, "
-               "no numbers, no logos, no people, no characters",
+               "the hallway in the CENTER-RIGHT of the frame, the door "
+               "COMPLETELY CLOSED, flat in its frame, no gap, no "
+               "opening, no light coming through the door edges, the "
+               "door shut tight, plain empty hallway walls, dimmer "
+               "light than the living room, the hallway darker than "
+               "the rest of the house, plain floor, clear empty floor "
+               "space in the CENTER of the frame where a person would "
+               "stand in profile facing right toward the door, heavy "
+               "thoughtful mood, a plain empty wall band across the "
+               "very TOP of the frame, no door number, no door plate, "
+               "no readable text, no numbers, no logos, no people, "
+               "no characters",
     "shot-04": "vertical 9:16, " + ROOM + ", a BIG window on the LEFT "
                "wall, " + LIGHT_NOON + ", the window glass clean and "
                "shining, the window frame plain with no writing, clear "
@@ -104,21 +121,26 @@ PROMPTS = {
                "of the window where a person would stand in profile "
                "facing left toward the window, " + NOBANS,
     "shot-05": "vertical 9:16, the kitchen of the same apartment, a "
-               "tall fridge with its door OPEN, the open fridge "
-               "interior showing plain empty shelves with simple "
-               "geometric shapes and no labels, cold white light "
-               "spilling out of the open fridge onto the floor, "
-               + LIGHT_NOON + ", clear empty floor space in front of "
-               "the open fridge where a person would stand in profile "
-               "facing left toward the fridge, a plain empty wall band "
-               "across the very TOP of the frame, no food with fine "
-               "detail, no labels, no magnets, no readable text, "
-               "no numbers, no logos, no people, no characters",
-    "shot-06": "vertical 9:16, the entryway of the same apartment, a "
-               "row of simple plain shoes lined up on the floor, one "
-               "pair in the middle being arranged and the rest neatly "
-               "lined up, " + LIGHT_AFTERNOON + ", the light softer "
-               "and dimmer than midday, clear empty floor space in the "
+               "tall fridge on the LEFT side of the frame with its door "
+               "OPEN, the open fridge interior showing plain empty "
+               "shelves with simple geometric shapes and no labels, "
+               "absolutely no writing, no small printed marks, no "
+               "labels on the door interior or the shelves, cold white "
+               "light spilling out of the open fridge onto the floor, "
+               + LIGHT_NOON + ", clear empty floor space in the "
+               "CENTER-RIGHT of the frame in front of the open fridge "
+               "where a person would stand in profile facing left "
+               "toward the fridge, a plain empty wall band across the "
+               "very TOP of the frame, no food with fine detail, "
+               "no magnets, no readable text, no numbers, no logos, "
+               "no people, no characters",
+    "shot-06": "vertical 9:16, the entryway of the same apartment, "
+               "FOUR neat pairs of LOW flat shoes lined up in a row on "
+               "the floor, only low flat shoes, no tall boots, no boot "
+               "rising above the ankle, one pair in the middle slightly "
+               "apart as if being arranged and the rest neatly lined "
+               "up, " + LIGHT_AFTERNOON + ", the light softer and "
+               "dimmer than midday, clear empty floor space in the "
                "CENTER of the frame where a person would stand in "
                "profile facing right toward the shoes, a plain empty "
                "wall band across the very TOP of the frame, no tall "
