@@ -51,11 +51,13 @@ ROOM_DAY10 = ("the same home room in dim cold daylight, the same simple "
               "legs with open space under the top, the desk top LOW in "
               "the frame with its front edge about two-thirds down the "
               "frame")
-WALL_PLAN = ("a wall planner hanging on the wall ABOVE the desk, the "
-             "planner showing ONLY empty rectangular boxes and blank "
-             "horizontal lines, absolutely no letters, no words, no "
-             "numbers, no handwriting, no scribbles, no marks beside "
-             "the lines")
+WALL_PLAN = ("a plain white board hanging on the wall ABOVE the desk, "
+             "the board showing ONLY empty rectangular boxes and blank "
+             "horizontal lines drawn in thin grey, the board has NO "
+             "header, NO title bar, NO strip at the top, NO dark bar, "
+             "absolutely no letters, no words, no numbers, no "
+             "handwriting, no scribbles, no marks beside the lines, "
+             "no small symbols anywhere on the board")
 NOTEBOOK_OPEN = ("ONE single notebook lying OPEN on the desk, the open "
                  "notebook showing ONLY blank empty pages, no writing, "
                  "no letters, no words, no numbers, no drawings, only "
