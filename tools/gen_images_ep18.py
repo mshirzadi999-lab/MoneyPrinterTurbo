@@ -38,10 +38,12 @@ STYLE = ("hand-painted cinematic matte painting, painterly illustration "
          "detail, no camera look, no letters, no words, no numbers, "
          "no watermark, empty scene, no people, no characters, no text")
 
-# Shared room description: one living room at night.
+# Shared room description: one living room at night. NOTE: no clock
+# and no door in ROOM — FLUX renders a numbered clock and extra doors
+# from any mention, so clock/door are added explicitly only where the
+# directing needs them (01: clock+door; 06: door; 09: clock; 11: door).
 ROOM = ("the same living room at night, a wooden table and a chair, "
-        "a wall clock on the wall, a door, dim lamplight, dark "
-        "blue-grey night tones")
+        "dim lamplight, dark blue-grey night tones")
 CLOCK = ("a wall clock with NO readable numbers, only plain short "
          "lines and dots for the hour marks, clock hands visible, "
          "no brand, no logo, no digits")
