@@ -13,8 +13,11 @@ Lessons from ep16/ep17/ep20 applied from the start: the word
 "silhouette" / "shadow" makes FLUX render a human figure — no shadow
 language at all here. The notebook sits ON the desk explicitly; day 1
 it is OPEN with blank pages, day 10 it is CLOSED with a plain cover.
-The wall planner above the desk shows ONLY empty rectangular boxes
-and blank horizontal lines, never words/letters/numbers. No readable
+The wall planner hangs LOW on the wall JUST ABOVE the desk (top
+edge about halfway down the frame; the upper half of the wall is
+completely bare, so the text card in the top third never falls on
+it); it shows ONLY empty rectangular boxes and blank horizontal
+lines, never words/letters/numbers. No readable
 text / numbers / logos anywhere. One room throughout: desk on the
 RIGHT, daylight from the left; day 1 warm bright morning light, day
 10 the same light colder and dimmer. One desk, one notebook, one
@@ -51,8 +54,11 @@ ROOM_DAY10 = ("the same home room in dim cold daylight, the same simple "
               "legs with open space under the top, the desk top LOW in "
               "the frame with its front edge about two-thirds down the "
               "frame")
-WALL_PLAN = ("a plain white board hanging on the wall ABOVE the desk, "
-             "the board showing ONLY empty rectangular boxes and blank "
+WALL_PLAN = ("a plain white board hanging on the wall JUST ABOVE the "
+             "desk, LOW on the wall, its top edge about halfway down the "
+             "frame and its bottom edge just above the desk top, the "
+             "UPPER HALF of the wall completely bare and empty, the "
+             "board showing ONLY empty rectangular boxes and blank "
              "horizontal lines drawn in thin grey, the board has NO "
              "header, NO title bar, NO strip at the top, NO dark bar, "
              "absolutely no letters, no words, no numbers, no "
@@ -63,8 +69,10 @@ NOTEBOOK_OPEN = ("ONE single notebook lying OPEN on the desk, the open "
                  "no letters, no words, no numbers, no drawings, only "
                  "one notebook in the whole scene, never two notebooks")
 NOTEBOOK_CLOSED = ("ONE single notebook lying CLOSED flat on the desk, "
-                   "a plain cover with no text, no letters, no logo, no "
-                   "numbers, only one notebook in the whole scene, "
+                   "clearly closed, a single flat solid slab with a "
+                   "plain dark cover, no pages visible, no light page "
+                   "edges, no open pages, no text, no letters, no logo, "
+                   "no numbers, only one notebook in the whole scene, "
                    "never two notebooks")
 LIGHT_WARM = ("warm bright morning light coming from a window on the "
               "LEFT outside the frame, soft daylight from the left")
