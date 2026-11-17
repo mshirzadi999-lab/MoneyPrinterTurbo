@@ -92,7 +92,11 @@ PROMPTS = {
                "the desk where a person would sit on a chair facing "
                "the desk, no second notebook, no person",
     "shot-03": "vertical 9:16, a bright home room in daylight, a wooden "
-               "desk occupying ONLY the RIGHT HALF of the frame, " +
+               "desk occupying ONLY the RIGHT HALF of the frame, the "
+               "desk has FOUR STRAIGHT LEGS, NO crossbar, NO stretcher "
+               "bar, NO solid side panels, NO closed front, just four "
+               "plain thin legs with open space under the top so you "
+               "can see the wall and floor behind the legs, " +
                NOTEBOOK_OPEN + ", " + WALL_PLAN + ", a patch of warm "
                "morning light falling on the desk surface and the "
                "floor, soft daylight from the left, clear empty floor "
@@ -131,11 +135,15 @@ PROMPTS = {
                "LEFT side of the frame, no second notebook, no person",
     "shot-11": "vertical 9:16, wide view of the same home room in dim "
                "cold daylight, a wooden desk on the FAR RIGHT side of "
-               "the frame with " + NOTEBOOK_CLOSED + ", " + WALL_PLAN +
-               ", " + LIGHT_COLD + ", plain empty wall, large clear "
-               "empty floor space on the LEFT side of the room where a "
-               "person would walk from right to left, no second "
-               "notebook, no person, no readable text",
+               "the frame, the desk has FOUR STRAIGHT LEGS, NO "
+               "crossbar, NO stretcher bar, NO solid side panels, NO "
+               "closed front, just four plain thin legs with open "
+               "space under the top so you can see the wall and floor "
+               "behind the legs, with " + NOTEBOOK_CLOSED + ", " +
+               WALL_PLAN + ", " + LIGHT_COLD + ", plain empty wall, "
+               "large clear empty floor space on the LEFT side of the "
+               "room where a person would walk from right to left, no "
+               "second notebook, no person, no readable text",
 }
 
 PAIRS = (("CF_ACCOUNT_ID", "CF_API_TOKEN"),
